@@ -19,6 +19,6 @@ ffbuild_dockerbuild() {
 
     autoreconf -i
     ./configure --prefix="$FFBUILD_PREFIX"
-    make -j"$(nproc)"
+    make -j4
     make install
 }

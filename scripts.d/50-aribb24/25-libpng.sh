@@ -32,6 +32,6 @@ ffbuild_dockerbuild() {
     export CPPFLAGS="$CPPFLAGS -I$FFBUILD_PREFIX/include"
 
     ./configure "${myconf[@]}"
-    make -j$(nproc)
+    make -j4
     make install
 }

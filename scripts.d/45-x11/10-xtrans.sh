@@ -31,7 +31,7 @@ ffbuild_dockerbuild() {
     fi
 
     ./configure "${myconf[@]}"
-    make -j$(nproc)
+    make -j4
     make install
 
     cp -r "$FFBUILD_PREFIX"/share/aclocal/. /usr/share/aclocal

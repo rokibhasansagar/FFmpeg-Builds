@@ -32,7 +32,7 @@ ffbuild_dockerbuild() {
     fi
 
     meson "${myconf[@]}" ..
-    ninja -j$(nproc)
+    ninja -j4
     ninja install
 
     sed -i 's/Cflags:/Cflags: -DFRIBIDI_LIB_STATIC/' "$FFBUILD_PREFIX"/lib/pkgconfig/fribidi.pc

@@ -38,7 +38,7 @@ ffbuild_dockerbuild() {
     )
 
     ./configure "${myconf[@]}"
-    make -j$(nproc)
+    make -j4
     make install DESTDIR="/opt/mingw"
 
     cd ../mingw-w64-libraries/winpthreads
@@ -52,7 +52,7 @@ ffbuild_dockerbuild() {
     )
 
     ./configure "${myconf[@]}"
-    make -j$(nproc)
+    make -j4
     make install DESTDIR="/opt/mingw"
 }
 

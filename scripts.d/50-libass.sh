@@ -32,7 +32,7 @@ ffbuild_dockerbuild() {
     export CFLAGS="$CFLAGS -Dread_file=libass_internal_read_file"
 
     ./configure "${myconf[@]}"
-    make -j$(nproc)
+    make -j4
     make install
 }
 
