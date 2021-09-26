@@ -1,11 +1,11 @@
-ARG GH_REPO=ghcr.io/btbn/ffmpeg-builds
-FROM $GH_REPO/base:latest
+ARG GH_REPO=rokibhasansagar/ffmpeg-builds
+FROM ghcr.io/$GH_REPO/base:latest
 
 RUN --mount=src=ct-ng-config,dst=/.config \
     git clone --filter=blob:none https://github.com/crosstool-ng/crosstool-ng.git /ct-ng && cd /ct-ng && \
     ./bootstrap && \
     ./configure --enable-local && \
-    make -j$(nproc) && \
+    make -j4 && \
     cp /.config .config && \
     ./ct-ng build && \
     cd / && \

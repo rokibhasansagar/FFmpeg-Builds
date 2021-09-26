@@ -43,7 +43,7 @@ ffbuild_dockerbuild() {
     export LDFLAFS="$RAW_LDFLAGS"
 
     meson "${myconf[@]}" ..
-    ninja -j$(nproc)
+    ninja -j4
     ninja install
 
     gen-implib "$FFBUILD_PREFIX"/lib/{libdrm.so.2,libdrm.a}

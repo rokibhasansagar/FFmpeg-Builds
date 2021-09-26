@@ -49,7 +49,7 @@ ffbuild_dockerbuild() {
     fi
 
     ./configure "${myconf[@]}"
-    make -j$(nproc)
+    make -j4
     make install
 
     # Work around strip breaking LTO symbol index

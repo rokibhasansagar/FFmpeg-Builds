@@ -20,10 +20,10 @@ ffbuild_dockerbuild() {
     mkdir -p "$FFBUILD_PREFIX"/lib/pkgconfig
     cp frei0r.pc "$FFBUILD_PREFIX"/lib/pkgconfig
 
-    mkdir -p "$FFBUILD_PREFIX"/include
-    cp ../include/frei0r.h "$FFBUILD_PREFIX"/include
-
-    cat frei0r.pc
+    ./configure "${myconf[@]}"
+    make -C include -j4
+    make -C include install
+    make install-pkgconfigDATA
 }
 
 ffbuild_configure() {

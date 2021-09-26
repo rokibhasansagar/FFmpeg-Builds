@@ -70,7 +70,7 @@ cat <<EOF >"$BUILD_SCRIPT"
         --extra-cflags='$FF_CFLAGS' --extra-cxxflags='$FF_CXXFLAGS' \
         --extra-ldflags='$FF_LDFLAGS' --extra-ldexeflags='$FF_LDEXEFLAGS' --extra-libs='$FF_LIBS' \
         --extra-version="\$(date +%Y%m%d)"
-    make -j\$(nproc) V=1
+    make -j4 V=1
     make install install-doc
 EOF
 
@@ -93,7 +93,7 @@ if [[ "${TARGET}" == win* ]]; then
     zip -9 -r "${ARTIFACTS_PATH}/${OUTPUT_FNAME}" "$BUILD_NAME"
 else
     OUTPUT_FNAME="${BUILD_NAME}.tar.xz"
-    tar cJf "${ARTIFACTS_PATH}/${OUTPUT_FNAME}" "$BUILD_NAME"
+    tar -I'xz -9' -cf "${ARTIFACTS_PATH}/${OUTPUT_FNAME}" "$BUILD_NAME"
 fi
 cd -
 

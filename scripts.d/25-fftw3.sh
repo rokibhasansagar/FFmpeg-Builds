@@ -42,6 +42,6 @@ ffbuild_dockerbuild() {
     fi
 
     ./bootstrap.sh "${myconf[@]}"
-    make -j$(nproc)
+    make -j4
     make install
 }

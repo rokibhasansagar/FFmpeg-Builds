@@ -30,6 +30,6 @@ ffbuild_dockerbuild() {
     export LIBS="-lpthread"
 
     ./autogen.sh "${myconf[@]}"
-    make -j$(nproc)
+    make -j4
     make install
 }

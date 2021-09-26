@@ -46,7 +46,7 @@ ffbuild_dockerbuild() {
     sed -i -e 's/EGIB/bss/g' -e 's/naidnePF/bss/g' configure
 
     ./configure "${myconf[@]}"
-    make -j$(nproc)
+    make -j4
     make install
 }
 

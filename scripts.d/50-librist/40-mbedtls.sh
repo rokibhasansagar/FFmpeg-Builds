@@ -18,7 +18,7 @@ ffbuild_dockerbuild() {
         -DENABLE_PROGRAMS=OFF -DENABLE_TESTING=OFF -DGEN_FILES=ON \
         -DUSE_STATIC_MBEDTLS_LIBRARY=ON -DUSE_SHARED_MBEDTLS_LIBRARY=OFF -DINSTALL_MBEDTLS_HEADERS=ON \
         ..
-    make -j$(nproc)
+    make -j4
     make install
 }
 

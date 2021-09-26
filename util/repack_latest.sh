@@ -55,7 +55,7 @@ while [[ $# -gt 0 ]]; do
         if [[ $INPUT == *.zip ]]; then
             zip -9 -r "$RELEASE_DIR/$ONAME.zip" "$ONAME"
         elif [[ $INPUT == *.tar.xz ]]; then
-            tar cvJf "$RELEASE_DIR/$ONAME.tar.xz" "$ONAME"
+            tar -I'xz -9' -cvf "$RELEASE_DIR/$ONAME.tar.xz" "$ONAME"
         fi
 
         rm -rf "$REPACK_DIR"

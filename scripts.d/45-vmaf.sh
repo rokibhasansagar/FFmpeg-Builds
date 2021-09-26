@@ -37,7 +37,7 @@ ffbuild_dockerbuild() {
     fi
 
     meson "${myconf[@]}" ../libvmaf
-    ninja -j"$(nproc)"
+    ninja -j4
     ninja install
 
     sed -i 's/Libs.private:/Libs.private: -lstdc++/; t; $ a Libs.private: -lstdc++' "$FFBUILD_PREFIX"/lib/pkgconfig/libvmaf.pc
