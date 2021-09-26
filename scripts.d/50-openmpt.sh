@@ -56,7 +56,7 @@ ffbuild_dockerbuild() {
         return -1
     fi
 
-    make -j$(nproc) "${myconf[@]}" all install
+    make -j4 "${myconf[@]}" all install
     rm -r "$FFBUILD_PREFIX"/share/doc/libopenmpt
 }
 

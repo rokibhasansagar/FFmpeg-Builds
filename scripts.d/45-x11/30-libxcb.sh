@@ -35,7 +35,7 @@ ffbuild_dockerbuild() {
     export LDFLAFS="$RAW_LDFLAGS"
 
     ./configure "${myconf[@]}"
-    make -j$(nproc)
+    make -j4
     make install
 
     for LIBNAME in "$FFBUILD_PREFIX"/lib/libxcb*.so.?; do

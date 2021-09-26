@@ -34,7 +34,7 @@ ffbuild_dockerbuild() {
 
     cmake -GNinja -DCMAKE_TOOLCHAIN_FILE="$FFBUILD_CMAKE_TOOLCHAIN" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$FFBUILD_PREFIX" "${mycmake[@]}" ..
 
-    ninja -j$(nproc)
+    ninja -j4
     ninja install
 
     if [[ $TARGET == linux* ]]; then

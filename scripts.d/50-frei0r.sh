@@ -33,7 +33,7 @@ ffbuild_dockerbuild() {
     fi
 
     ./configure "${myconf[@]}"
-    make -C include -j$(nproc)
+    make -C include -j4
     make -C include install
     make install-pkgconfigDATA
 }

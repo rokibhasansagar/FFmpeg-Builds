@@ -44,7 +44,7 @@ ffbuild_dockerbuild() {
     export LDFLAFS="$RAW_LDFLAGS"
 
     ./configure "${myconf[@]}"
-    make -j$(nproc)
+    make -j4
     make install
 
     gen-implib "$FFBUILD_PREFIX"/lib/{libXext.so.6,libXext.a}

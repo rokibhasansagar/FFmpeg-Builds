@@ -18,7 +18,8 @@ on:
         default: false
         required: false
   schedule:
-    - cron: '0 12 * * *'
+    # Runs at 01:00 UTC on roughly every 4th day of every month
+    - cron: '0 1 1,5,9,13,17,21,25,29 1-12 ?'
 
 env:
   DOCKER_BUILDKIT: 1
@@ -63,7 +64,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [win64,linux64,linuxarm64]
+        target: [win64,win32,linux64,linuxarm64]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -98,9 +99,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      max-parallel: 12
       matrix:
-        target: [win64,linux64,linuxarm64]
-        variant: [gpl,lgpl,gpl 4.4,gpl 5.0,lgpl 4.4,lgpl 5.0,gpl-shared,lgpl-shared,gpl-shared 4.4,gpl-shared 5.0,lgpl-shared 4.4,lgpl-shared 5.0]
+        target: [win64,win32,linux64,linuxarm64]
+        variant: [nonfree,gpl,nonfree 5.0,gpl 5.0,nonfree-shared,gpl-shared,nonfree-shared 5.0,gpl-shared 5.0]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -139,9 +141,10 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      max-parallel: 8
       matrix:
-        target: [win64,linux64,linuxarm64]
-        variant: [gpl,lgpl,gpl 4.4,gpl 5.0,lgpl 4.4,lgpl 5.0,gpl-shared,lgpl-shared,gpl-shared 4.4,gpl-shared 5.0,lgpl-shared 4.4,lgpl-shared 5.0]
+        target: [win64,win32,linux64,linuxarm64]
+        variant: [nonfree,gpl,nonfree 5.0,gpl 5.0,nonfree-shared,gpl-shared,nonfree-shared 5.0,gpl-shared 5.0]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -160,6 +163,7 @@ jobs:
         with:
           name: ffmpeg
           path: artifacts/*
+          retention-days: 10
   publish_release:
     name: Publish release
     if: ${{ !cancelled() && ( github.event_name == 'schedule' || github.event.inputs.doRelease == 'true' ) && needs.build_ffmpeg.result == 'success' }}
@@ -198,10 +202,6 @@ jobs:
           git push --delete origin "$TAGNAME" || true
           sleep 30
           hub release create $(for a in latest_artifacts/*; do echo -a $a; done) -m "$NAME" -t "master" "$TAGNAME"
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-      - name: Update Wiki
-        run: ./util/update_wiki.sh artifacts ${{ steps.create_release.outputs.tag_name }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
       - name: Prune old releases

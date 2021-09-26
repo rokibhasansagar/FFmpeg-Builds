@@ -20,7 +20,7 @@ ffbuild_dockerbuild() {
     )
 
     CC="${FFBUILD_CROSS_PREFIX}gcc" CXX="${FFBUILD_CROSS_PREFIX}g++" ./waf configure "${mywaf[@]}"
-    ./waf -j$(nproc)
+    ./waf -j4
     ./waf install
 
     sed -i 's/Cflags:/Cflags: -DSORD_STATIC/' "$FFBUILD_PREFIX"/lib/pkgconfig/sord-0.pc

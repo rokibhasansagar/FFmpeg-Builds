@@ -14,7 +14,7 @@ ffbuild_dockerbuild() {
     mkdir build && cd build
 
     cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE="$FFBUILD_CMAKE_TOOLCHAIN" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$FFBUILD_PREFIX" -DCMAKE_POSITION_INDEPENDENT_CODE=ON ..
-    ninja -j$(nproc)
+    ninja -j4
     ninja install
 
     # Build system is severely lacking in options, clean up after it
