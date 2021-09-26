@@ -12,7 +12,7 @@ Linux (arm64) builds are targetting Ubuntu 18.04 (glibc-2.27 + linux-4.15) and a
 
 Builds run at 01:00 UTC on roughly every 4th day of every month (or GitHub's idea of that time) and are automatically released on success.
 
-**Auto-Builds run ONLY for gpl and nonfree variants for all 64-bit platforms.**
+**Auto-Builds run ONLY for gpl and nonfree variants for all four supported platforms.**
 
 ### Release Retention Policy
 
@@ -64,7 +64,6 @@ Available variants:
 * `nonfree-shared` Same again, but with the nonfree set of dependencies.
 
 All of those can be optionally combined with any combination of addins.
-* `5.1` to build from the 5.1 release branch instead of master.
 * `5.0` to build from the 5.0 release branch instead of master.
 * `4.4` to build from the 4.4 release branch instead of master.
 * `debug` to not strip debug symbols from the binaries. This increases the output size by about 250MB.

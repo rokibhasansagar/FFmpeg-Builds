@@ -28,7 +28,7 @@ ffbuild_dockerbuild() {
     ./waf install
 
     meson "${myconf[@]}" ..
-    ninja -j"$(nproc)"
+    ninja -j4
     ninja install
 }
 
