@@ -9,7 +9,7 @@ ffbuild_enabled() {
 ffbuild_dockerbuild() {
     mkdir twolame
     cd twolame
-    wget -O twolame.tar.gz "$TWOLAME_SRC"
+    wget -O twolame.tar.gz "$TWOLAME_SRC" --tries=3 || curl -L -o twolame.tar.gz "$TWOLAME_SRC" --retry 3
     tar xaf twolame.tar.gz
     rm twolame.tar.gz
     cd twolame*

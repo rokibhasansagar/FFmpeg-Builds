@@ -12,7 +12,7 @@ ffbuild_dockerbuild() {
     mkdir rubberband
     cd rubberband
 
-    wget "$RUBBERBAND_SRC" -O rubberband.tar.gz
+    wget -O rubberband.tar.gz "$RUBBERBAND_SRC" --tries=3 || curl -L -o rubberband.tar.gz "$RUBBERBAND_SRC" --retry 3
     tar xaf rubberband.tar.gz
     rm rubberband.tar.gz
     cd rubberband*

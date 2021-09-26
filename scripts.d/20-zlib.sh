@@ -10,7 +10,7 @@ ffbuild_dockerbuild() {
     mkdir zlib
     cd zlib
 
-    wget "$ZLIB_SRC" -O zlib.tar.gz
+    wget -O zlib.tar.gz "$ZLIB_SRC" --tries=3 || curl -L -o zlib.tar.gz "$ZLIB_SRC" --retry 3
     tar xaf zlib.tar.gz
     rm zlib.tar.gz
     cd zlib*

@@ -7,7 +7,7 @@ ffbuild_enabled() {
 }
 
 ffbuild_dockerbuild() {
-    wget "$GMP_SRC" -O gmp.tar.xz
+    wget -O gmp.tar.xz "$GMP_SRC" --tries=3 || curl -L -o gmp.tar.xz "$GMP_SRC" --retry 3
     tar xaf gmp.tar.xz
     rm gmp.tar.xz
     cd gmp*

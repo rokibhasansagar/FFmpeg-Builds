@@ -10,7 +10,7 @@ ffbuild_enabled() {
 ffbuild_dockerbuild() {
     mkdir ft
     cd ft
-    wget -O ft.tar.gz "$FREETYPE_SRC"
+    wget -O ft.tar.gz "$FREETYPE_SRC" --tries=3 || curl -L -o ft.tar.gz "$FREETYPE_SRC" --retry 3
     tar xaf ft.tar.gz
     rm ft.tar.gz
     cd freetype*

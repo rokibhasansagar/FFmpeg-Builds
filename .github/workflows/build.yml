@@ -8,7 +8,9 @@ on:
   repository_dispatch:
     types: [build]
   schedule:
-    - cron: '0 12 * * *'
+    # Everyday at 02 am UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
 
 env:
   DOCKER_BUILDKIT: 1
@@ -65,7 +67,7 @@ jobs:
       fail-fast: false
       matrix:
         target: [win64,linux64]
-        variant: [gpl,lgpl,gpl 4.4,lgpl 4.4,gpl-shared,lgpl-shared,gpl-shared 4.4,lgpl-shared 4.4]
+        variant: [nonfree,gpl,lgpl,nonfree 4.4,gpl 4.4,lgpl 4.4,nonfree-shared,gpl-shared,lgpl-shared,nonfree-shared 4.4,gpl-shared 4.4,lgpl-shared 4.4]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -102,7 +104,7 @@ jobs:
       fail-fast: false
       matrix:
         target: [win64,linux64]
-        variant: [gpl,lgpl,gpl 4.4,lgpl 4.4,gpl-shared,lgpl-shared,gpl-shared 4.4,lgpl-shared 4.4]
+        variant: [nonfree,gpl,lgpl,nonfree 4.4,gpl 4.4,lgpl 4.4,nonfree-shared,gpl-shared,lgpl-shared,nonfree-shared 4.4,gpl-shared 4.4,lgpl-shared 4.4]
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -140,10 +142,6 @@ jobs:
           TAGNAME="autobuild-$(date +'%Y-%m-%d-%H-%M')"
           hub release create $(for a in artifacts/*.{zip,tar.xz}; do echo -a $a; done) -m "$NAME" -t "master" "$TAGNAME"
           echo "::set-output name=tag_name::${TAGNAME}"
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-      - name: Update Wiki
-        run: ./util/update_wiki.sh artifacts ${{ steps.create_release.outputs.tag_name }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
       - name: Prune old releases

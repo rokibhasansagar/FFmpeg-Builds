@@ -10,7 +10,7 @@ ffbuild_enabled() {
 ffbuild_dockerbuild() {
     mkdir xvid
     cd xvid
-    wget -O xvid.tar.gz "$XVID_SRC"
+    wget -O xvid.tar.gz "$XVID_SRC" --tries=3 || curl -L -o xvid.tar.gz "$XVID_SRC" --retry 3
     tar xaf xvid.tar.gz
     rm xvid.tar.gz
     cd xvid*

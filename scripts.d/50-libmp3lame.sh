@@ -9,7 +9,7 @@ ffbuild_enabled() {
 ffbuild_dockerbuild() {
     mkdir lame
     cd lame
-    wget -O lame.tar.gz "$LAME_SRC"
+    wget -O lame.tar.gz "$LAME_SRC" --tries=3 || curl -L -o lame.tar.gz "$LAME_SRC" --retry 3
     tar xaf lame.tar.gz
     rm lame.tar.gz
     cd lame*

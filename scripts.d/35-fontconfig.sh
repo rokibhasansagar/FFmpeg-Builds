@@ -10,7 +10,7 @@ ffbuild_dockerbuild() {
     mkdir fc
     cd fc
 
-    wget "$FONTCONFIG_SRC" -O fc.tar.gz
+    wget -O fc.tar.gz "$FONTCONFIG_SRC" --tries=3 || curl -L -o fc.tar.gz "$FONTCONFIG_SRC" --retry 3
     tar xaf fc.tar.gz
     rm fc.tar.gz
     cd fontconfig*

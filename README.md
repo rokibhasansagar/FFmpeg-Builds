@@ -8,12 +8,12 @@ Linux builds are targetting Ubuntu 16.04 (glibc-2.23 + linux-4.4) and anything m
 
 ## Auto-Builds
 
-Builds run daily at 12:00 UTC (or GitHubs idea of that time) and are automatically released on success.
+Builds run daily at 02:00 UTC (or GitHubs idea of that time) and are automatically released on success.
 
 ### Release Retention Policy
 
-- The last build of each month is kept for two years.
-- The last 14 daily builds are kept.
+- The last build of past 6 months is kept for two years.
+- The last 7 daily builds are kept.
 
 ## Package List
 
@@ -49,6 +49,10 @@ Available:
 * `lgpl` Lacking libraries that are GPL-only. Most prominently libx264 and libx265.
 * `gpl-shared` Same as gpl, but comes with the libav* family of shared libs instead of pure static executables.
 * `lgpl-shared` Same again, but with the lgpl set of dependencies.
+
+Additional: _Use With Caution_ as they are GPL-incompatable!
+* `nonfree` Includes all of the libraries from GPL build, plus non-free libraries like libfdk-aac.
+* `nonfree-shared` Same as nonfree, but with nonfree set of dependencies.
 
 All of those can be optionally combined with any combination of addins.
 * `4.4` to build from the 4.4 release branch instead of master.

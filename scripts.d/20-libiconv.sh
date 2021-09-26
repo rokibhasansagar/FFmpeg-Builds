@@ -8,7 +8,7 @@ ffbuild_enabled() {
 }
 
 ffbuild_dockerbuild() {
-    wget -O iconv.tar.gz "$ICONV_SRC"
+    wget -O iconv.tar.gz "$ICONV_SRC" --tries=3 || curl -L -o iconv.tar.gz "$ICONV_SRC" --retry 3
     tar xaf iconv.tar.gz
     rm iconv.tar.gz
     cd libiconv*

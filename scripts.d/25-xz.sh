@@ -10,7 +10,7 @@ ffbuild_dockerbuild() {
     mkdir xz
     cd xz
 
-    wget "$XZ_SRC" -O xz.tar.xz
+    wget -O xz.tar.xz "$XZ_SRC" --tries=3 || curl -L -o xz.tar.xz "$XZ_SRC" --retry 3
     tar xaf xz.tar.xz
     rm xz.tar.xz
     cd xz*

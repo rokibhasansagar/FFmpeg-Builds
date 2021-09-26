@@ -10,7 +10,7 @@ ffbuild_dockerbuild() {
     mkdir sdl
     cd sdl
 
-    wget "$SDL_SRC" -O SDL.tar.gz
+    wget -O SDL.tar.gz "$SDL_SRC" --tries=3 || curl -L -o SDL.tar.gz "$SDL_SRC" --retry 3
     tar xaf SDL.tar.gz
     rm SDL.tar.gz
     cd SDL*
