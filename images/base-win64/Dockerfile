@@ -1,4 +1,4 @@
-ARG GH_REPO=btbn/ffmpeg-builds
+ARG GH_REPO=rokibhasansagar/ffmpeg-builds
 FROM ghcr.io/$GH_REPO/base:latest
 
 ENV DEBIAN_FRONTEND noninteractive

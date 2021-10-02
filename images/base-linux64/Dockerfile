@@ -1,4 +1,4 @@
-ARG GH_REPO=btbn/ffmpeg-builds
+ARG GH_REPO=rokibhasansagar/ffmpeg-builds
 FROM ghcr.io/$GH_REPO/base:latest
 
 ENV PATH="/opt/ct-ng/bin:${PATH}"
