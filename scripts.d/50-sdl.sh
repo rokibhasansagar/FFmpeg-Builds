@@ -21,6 +21,8 @@ ffbuild_dockerbuild() {
         --prefix="$FFBUILD_PREFIX"
         --disable-shared
         --enable-static
+        --enable-x11-shared
+        --enable-video-x11
     )
 
     if [[ $TARGET == win* || $TARGET == linux* ]]; then
