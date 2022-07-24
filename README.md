@@ -64,6 +64,7 @@ Available:
 * `nonfree-shared` Same again, but with the nonfree set of dependencies.
 
 All of those can be optionally combined with any combination of addins.
+* `5.1` to build from the 5.1 release branch instead of master.
 * `5.0` to build from the 5.0 release branch instead of master.
 * `4.4` to build from the 4.4 release branch instead of master.
 * `debug` to not strip debug symbols from the binaries. This increases the output size by about 250MB.
