@@ -102,7 +102,7 @@ jobs:
       max-parallel: 12
       matrix:
         target: [win64,win32,linux64,linuxarm64]
-        variant: [nonfree,gpl,nonfree 5.0,gpl 5.0,nonfree-shared,gpl-shared,nonfree-shared 5.0,gpl-shared 5.0]
+        variant: [nonfree,gpl,nonfree 5.1,gpl 5.1,nonfree-shared,gpl-shared,nonfree-shared 5.1,gpl-shared 5.1]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -144,7 +144,7 @@ jobs:
       max-parallel: 8
       matrix:
         target: [win64,win32,linux64,linuxarm64]
-        variant: [nonfree,gpl,nonfree 5.0,gpl 5.0,nonfree-shared,gpl-shared,nonfree-shared 5.0,gpl-shared 5.0]
+        variant: [nonfree,gpl,nonfree 5.1,gpl 5.1,nonfree-shared,gpl-shared,nonfree-shared 5.1,gpl-shared 5.1]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
