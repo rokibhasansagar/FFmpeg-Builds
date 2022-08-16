@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://code.videolan.org/videolan/libplacebo.git"
-SCRIPT_COMMIT="ae154b4566420507f6821e423450840c8a35bcb9"
+SCRIPT_COMMIT="0f0e3b36824ab3ebde6844040f3a4399a4628592"
 
 ffbuild_enabled() {
     [[ $ADDINS_STR == *4.4* ]] && return -1

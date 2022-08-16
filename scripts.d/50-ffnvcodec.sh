@@ -1,11 +1,7 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://github.com/FFmpeg/nv-codec-headers.git"
-SCRIPT_COMMIT="450f8a634309b8f212b1a642630e164150d6a427"
-
-SCRIPT_REPO2="https://github.com/FFmpeg/nv-codec-headers.git"
-SCRIPT_COMMIT2="2055784e5d5bfb3df78d4d3645f345f19062dce2"
-SCRIPT_BRANCH2="sdk/11.1"
+SCRIPT_COMMIT="3ed7c9a0a2c0b698b83088e13008f3ec983219b2"
 
 ffbuild_enabled() {
     return 0

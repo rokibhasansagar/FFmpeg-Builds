@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://github.com/lv2/lv2.git"
-SCRIPT_COMMIT="bdaebafd3223551b3d9d890070ac0671b3b645c1"
+SCRIPT_COMMIT="c8fb4d21901a4de2c822df537202b6a313e89edd"
 
 ffbuild_enabled() {
     return 0
