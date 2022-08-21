@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://git.libssh.org/projects/libssh.git"
-SCRIPT_COMMIT="37deed27d66ba342e7e8c0a993bfe519f3967337"
+SCRIPT_COMMIT="ac6d2fad4a8bf07277127736367e90387646363f"
 
 ffbuild_enabled() {
     return 0
@@ -12,6 +12,11 @@ ffbuild_dockerbuild() {
     cd libssh
 
     mkdir build && cd build
+
+    if [[ $TARGET == win* ]]; then
+        export CFLAGS="$CFLAGS -Dgettimeofday=ssh_gettimeofday"
+        export CXXFLAGS="$CFLAGS -Dgettimeofday=ssh_gettimeofday"
+    fi
 
     cmake -GNinja -DCMAKE_TOOLCHAIN_FILE="$FFBUILD_CMAKE_TOOLCHAIN" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$FFBUILD_PREFIX" \
         -DBUILD_SHARED_LIBS=OFF \
