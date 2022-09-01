@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://github.com/libsdl-org/SDL.git"
-SCRIPT_COMMIT="fdef96e2331700247a4caff0db576aa669c30188"
+SCRIPT_COMMIT="6c2c01e0d1f7bc8c161dda26d983bd270ce0d176"
 
 ffbuild_enabled() {
     return 0
@@ -26,7 +26,6 @@ ffbuild_dockerbuild() {
             -DSDL_X11_SHARED=OFF
             -DHAVE_XGENERICEVENT=TRUE
             -DSDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM=1
-
             -DSDL_PULSEAUDIO=ON
             -DSDL_PULSEAUDIO_SHARED=OFF
         )
