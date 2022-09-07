@@ -18,8 +18,8 @@ jobs:
       fail-fast: false
       max-parallel: 8
       matrix:
-        target: [win64,win32,linux64,linuxarm64]
-        variant: [nonfree,gpl,lgpl,nonfree 5.1,gpl 5.1,lgpl 5.1,nonfree-shared,gpl-shared,lgpl-shared,nonfree-shared 5.1,gpl-shared 5.1,lgpl-shared 5.1]
+        target: [linux64,win64,linuxarm64]
+        variant: [nonfree 5.1,gpl 5.1,lgpl 5.1,nonfree-shared 5.1,gpl-shared 5.1,lgpl-shared 5.1]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
