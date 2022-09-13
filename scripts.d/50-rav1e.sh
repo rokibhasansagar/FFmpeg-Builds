@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://github.com/xiph/rav1e.git"
-SCRIPT_COMMIT="db7a71ae53a31a60bf31bd0635f46e15bdcc444c"
+SCRIPT_COMMIT="25f6c0fadc51f65a0c05ca4540cb8699eba5c644"
 
 ffbuild_enabled() {
     [[ $TARGET == win32 ]] && return -1
@@ -29,11 +29,6 @@ ffbuild_dockerbuild() {
         )
     fi
 
-    export CC="${FFBUILD_CROSS_PREFIX}gcc"
-    export CXX="${FFBUILD_CROSS_PREFIX}g++"
-    export LD="${FFBUILD_CROSS_PREFIX}gcc"
-    export AR="${FFBUILD_CROSS_PREFIX}ar"
-
     if [[ -n "$FFBUILD_RUST_TARGET" ]]; then
         unset PKG_CONFIG_LIBDIR
 
@@ -51,11 +46,9 @@ ffbuild_dockerbuild() {
             --target="$FFBUILD_RUST_TARGET"
         )
         cat <<EOF >$CARGO_HOME/config.toml
-[build]
-target = "$FFBUILD_RUST_TARGET"
 [target.$FFBUILD_RUST_TARGET]
-linker = "$LD"
-ar = "$AR"
+linker = "${FFBUILD_CROSS_PREFIX}gcc"
+ar = "${FFBUILD_CROSS_PREFIX}ar"
 EOF
     fi
 
