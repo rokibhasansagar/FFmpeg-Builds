@@ -12,7 +12,7 @@ Linux (arm64) builds are targetting Ubuntu 18.04 (glibc-2.27 + linux-4.15) and a
 
 Builds run at 01:00 UTC on roughly every 4th day of every month (or GitHub's idea of that time) and are automatically released on success.
 
-**Auto-Builds run ONLY for gpl and nonfree variants for all four supported platforms.**
+**Auto-Builds run ONLY for gpl and nonfree variants for all 64-bit platforms.**
 
 ### Release Retention Policy
 
