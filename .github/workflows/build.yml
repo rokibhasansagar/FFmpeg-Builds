@@ -128,7 +128,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      max-parallel: 8
+      max-parallel: 12
       matrix:
         target: [linux64,win64,linuxarm64]
         variant: [nonfree,gpl,nonfree 5.1,gpl 5.1,nonfree-shared,gpl-shared,nonfree-shared 5.1,gpl-shared 5.1]
@@ -185,7 +185,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      max-parallel: 8
+      max-parallel: 12
       matrix:
         target: [linux64,win64,linuxarm64]
         variant: [nonfree,gpl,nonfree 5.1,gpl 5.1,nonfree-shared,gpl-shared,nonfree-shared 5.1,gpl-shared 5.1]
