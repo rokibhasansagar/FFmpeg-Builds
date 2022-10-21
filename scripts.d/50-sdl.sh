@@ -26,7 +26,6 @@ ffbuild_dockerbuild() {
             -DSDL_X11_SHARED=OFF
             -DHAVE_XGENERICEVENT=TRUE
             -DSDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM=1
-
             -DSDL_PULSEAUDIO=ON
             -DSDL_PULSEAUDIO_SHARED=OFF
         )
