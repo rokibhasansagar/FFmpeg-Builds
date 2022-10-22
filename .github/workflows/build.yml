@@ -45,10 +45,7 @@ jobs:
           password: ${{ github.token }}
       - name: Image Name
         id: imagename
-        run: |
-          IMG="${GITHUB_REPOSITORY,,}/base"
-          echo "name=ghcr.io/${IMG/ /-}" >> $GITHUB_OUTPUT
-          echo "rawname=${IMG/ /-}" >> $GITHUB_OUTPUT
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}/base" >> $GITHUB_OUTPUT
       - name: Stop Commands
         run: T="$(echo -n ${{ github.token }} | sha256sum | head -c 64)" && echo -e "::add-mask::${T}\n::stop-commands::${T}"
       - name: Build target base image
@@ -95,10 +92,7 @@ jobs:
           password: ${{ github.token }}
       - name: Image Name
         id: imagename
-        run: |
-          IMG="${GITHUB_REPOSITORY,,}/base-${{ matrix.target }}"
-          echo "name=ghcr.io/${IMG/ /-}" >> $GITHUB_OUTPUT
-          echo "rawname=${IMG/ /-}" >> $GITHUB_OUTPUT
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}/base-${{ matrix.target }}" >> $GITHUB_OUTPUT
       - name: Stop Commands
         run: T="$(echo -n ${{ github.token }} | sha256sum | head -c 64)" && echo -e "::add-mask::${T}\n::stop-commands::${T}"
       - name: Build target base image
@@ -150,9 +144,8 @@ jobs:
       - name: Image Name
         id: imagename
         run: |
-          IMG="${GITHUB_REPOSITORY,,}/${{ matrix.target }}-${{ matrix.variant }}"
-          echo "name=ghcr.io/${IMG/ /-}" >> $GITHUB_OUTPUT
-          echo "rawname=${IMG/ /-}" >> $GITHUB_OUTPUT
+          IMG="ghcr.io/${GITHUB_REPOSITORY,,}/${{ matrix.target }}-${{ matrix.variant }}"
+          echo "name=${IMG/ /-}" >> $GITHUB_OUTPUT
           echo "gh_repo=${GITHUB_REPOSITORY,,}" >> $GITHUB_OUTPUT
       - name: Stop Commands
         run: T="$(echo -n ${{ github.token }} | sha256sum | head -c 64)" && echo -e "::add-mask::${T}\n::stop-commands::${T}"
