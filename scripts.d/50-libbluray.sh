@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://code.videolan.org/videolan/libbluray.git"
-SCRIPT_COMMIT="eb51ac1e56adf55b8197a99e9961fcc71c167fcf"
+SCRIPT_COMMIT="2f10fb73b869337f2a2fb6fc8c8b45ef88383b78"
 
 ffbuild_enabled() {
     return 0
