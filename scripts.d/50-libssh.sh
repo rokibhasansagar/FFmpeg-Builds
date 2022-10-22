@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://git.libssh.org/projects/libssh.git"
-SCRIPT_COMMIT="37deed27d66ba342e7e8c0a993bfe519f3967337"
+SCRIPT_COMMIT="3c272d00fb29875964393a7173340d4ba43c3655"
 
 ffbuild_enabled() {
     return 0
