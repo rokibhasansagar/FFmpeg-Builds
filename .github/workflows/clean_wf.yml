@@ -1,27 +1,25 @@
 name: Cleanup Workflow Logs
 
 on:
+  schedule:
+    # Runs at 01:01 UTC on the 2nd of every month
+    - cron: '1 1 2 * *'
   workflow_dispatch:
     inputs:
       days_old:
         description: "The amount of days old to delete"
-        default: "7"
+        default: "10"
         required: false
+env:
+  SCHEDULED_DAYS_OLD: "10"
 
 jobs:
   clean-logs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
-      - uses: igorjs/gh-actions-clean-workflow@v1
+      - uses: igorjs/gh-actions-clean-workflow@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           owner: ${{ github.repository_owner }}
           repo: ${{ github.event.repository.name }}
-          days_old: ${{ github.event.inputs.days_old }}
-      - run: sleep 2s
-      - uses: igorjs/gh-actions-clean-workflow@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          owner: ${{ github.repository_owner }}
-          repo: ${{ github.event.repository.name }}
-          days_old: ${{ github.event.inputs.days_old }}
+          days_old: ${{ github.event.inputs.days_old || env.SCHEDULED_DAYS_OLD }}
