@@ -47,6 +47,9 @@ ffbuild_dockerbuild() {
         return -1
     fi
 
+    export CFLAGS="$CFLAGS -fno-strict-aliasing"
+    export CXXFLAGS="$CXXFLAGS -fno-strict-aliasing"
+
     ./Configure "${myconf[@]}"
 
     sed -i -e "/^CFLAGS=/s|=.*|=${CFLAGS}|" -e "/^LDFLAGS=/s|=[[:space:]]*$|=${LDFLAGS}|" Makefile
