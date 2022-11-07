@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://github.com/breakfastquay/rubberband.git"
-SCRIPT_COMMIT="cbc2453743fd55bd746fd4f930676140a9d41da2"
+SCRIPT_COMMIT="3d3cd0454b38fe1d108375a19b5baed5c2f318fd"
 
 ffbuild_enabled() {
     [[ $VARIANT == lgpl* ]] && return -1
@@ -17,6 +17,8 @@ ffbuild_dockerbuild() {
     local myconf=(
         --prefix="$FFBUILD_PREFIX"
         -Ddefault_library=static
+        -Dfft=fftw
+        -Dresampler=libsamplerate
     )
 
     if [[ $TARGET == win* || $TARGET == linux* ]]; then
@@ -31,9 +33,6 @@ ffbuild_dockerbuild() {
     meson "${myconf[@]}" ..
     ninja -j4
     ninja install
-
-    # Fix static linking
-    echo "Requires.private: fftw3 samplerate" >> "$FFBUILD_PREFIX"/lib/pkgconfig/rubberband.pc
 }
 
 ffbuild_configure() {
