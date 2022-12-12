@@ -1,10 +1,10 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://github.com/KhronosGroup/OpenCL-Headers.git"
-SCRIPT_COMMIT="b590a6bfe034ea3a418b7b523e3490956bcb367a"
+SCRIPT_COMMIT="8f33fba7c14b926c6551bf86b5b255e3e0f47f86"
 
 SCRIPT_REPO2="https://github.com/KhronosGroup/OpenCL-ICD-Loader.git"
-SCRIPT_COMMIT2="c5a6e013ad7c8b379fc94e3c849aa3396900a63c"
+SCRIPT_COMMIT2="9a3e962f16f5097d2054233ad8b6dad51b6f41b7"
 
 ffbuild_enabled() {
     return 0
@@ -22,7 +22,10 @@ ffbuild_dockerbuild() {
 
     mkdir build && cd build
 
-    cmake -DCMAKE_TOOLCHAIN_FILE="$FFBUILD_CMAKE_TOOLCHAIN" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$FFBUILD_PREFIX" -DOPENCL_ICD_LOADER_HEADERS_DIR="$FFBUILD_PREFIX"/include -DOPENCL_ICD_LOADER_BUILD_SHARED_LIBS=OFF -DOPENCL_ICD_LOADER_DISABLE_OPENCLON12=ON -DOPENCL_ICD_LOADER_PIC=ON -DOPENCL_ICD_LOADER_BUILD_TESTING=OFF -DBUILD_TESTING=OFF ..
+    cmake -DCMAKE_TOOLCHAIN_FILE="$FFBUILD_CMAKE_TOOLCHAIN" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$FFBUILD_PREFIX" \
+        -DOPENCL_ICD_LOADER_HEADERS_DIR="$FFBUILD_PREFIX"/include -DOPENCL_ICD_LOADER_BUILD_SHARED_LIBS=OFF \
+        -DOPENCL_ICD_LOADER_DISABLE_OPENCLON12=ON -DOPENCL_ICD_LOADER_PIC=ON \
+        -DOPENCL_ICD_LOADER_BUILD_TESTING=OFF -DBUILD_TESTING=OFF ..
     make -j4
     make install
 
@@ -34,12 +37,13 @@ ffbuild_dockerbuild() {
     echo "Name: OpenCL" >> OpenCL.pc
     echo "Description: OpenCL ICD Loader" >> OpenCL.pc
     echo "Version: 9999" >> OpenCL.pc
-    echo "Libs: -L\${libdir} -lOpenCL" >> OpenCL.pc
     echo "Cflags: -I\${includedir}" >> OpenCL.pc
 
     if [[ $TARGET == linux* ]]; then
+        echo "Libs: -L\${libdir} -lOpenCL" >> OpenCL.pc
         echo "Libs.private: -ldl" >> OpenCL.pc
     elif [[ $TARGET == win* ]]; then
+        echo "Libs: -L\${libdir} -l:OpenCL.a" >> OpenCL.pc
         echo "Libs.private: -lole32 -lshlwapi -lcfgmgr32" >> OpenCL.pc
     fi
 
