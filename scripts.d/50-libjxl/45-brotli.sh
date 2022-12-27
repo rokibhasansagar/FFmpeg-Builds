@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://github.com/google/brotli.git"
-SCRIPT_COMMIT="3914999fcc1fda92e750ef9190aa6db9bf7bdb07"
+SCRIPT_COMMIT="509d4419bd2e7f40ac97106324abf0b49d9fd7ff"
 
 ffbuild_enabled() {
     return 0
@@ -13,22 +13,8 @@ ffbuild_dockerbuild() {
 
     mkdir build && cd build
 
-    cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE="$FFBUILD_CMAKE_TOOLCHAIN" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$FFBUILD_PREFIX" -DCMAKE_POSITION_INDEPENDENT_CODE=ON ..
+    cmake -G Ninja -DCMAKE_TOOLCHAIN_FILE="$FFBUILD_CMAKE_TOOLCHAIN" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$FFBUILD_PREFIX" \
+        -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF ..
     ninja -j4
     ninja install
-
-    # Build system is severely lacking in options, clean up after it
-    rm -r "${FFBUILD_PREFIX}"/bin
-    mv "${FFBUILD_PREFIX}"/lib/libbrotlienc{-static,}.a
-    mv "${FFBUILD_PREFIX}"/lib/libbrotlidec{-static,}.a
-    mv "${FFBUILD_PREFIX}"/lib/libbrotlicommon{-static,}.a
-
-    if [[ $TARGET == win* ]]; then
-        rm "${FFBUILD_PREFIX}"/lib/libbrotli*.dll.a
-    elif [[ $TARGET == linux* ]]; then
-        rm "${FFBUILD_PREFIX}"/lib/libbrotli*.so*
-    else
-        echo "Unknown target"
-        return -1
-    fi
 }
