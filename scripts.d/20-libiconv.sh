@@ -11,7 +11,7 @@ ffbuild_dockerbuild() {
     git-mini-clone "$SCRIPT_REPO" "$SCRIPT_COMMIT" iconv
     cd iconv
 
-    ./gitsub.sh pull
+    ./autopull.sh --one-time || git-mini-clone "https://git.savannah.gnu.org/git/gnulib.git" "master" "gnulib"
     ./autogen.sh
 
     local myconf=(
