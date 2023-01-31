@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SCRIPT_REPO="https://gitlab.gnome.org/GNOME/libxml2.git"
+SCRIPT_REPO="https://github.com/GNOME/libxml2.git"
 SCRIPT_COMMIT="c7260a47f19e01f4f663b6a56fbdc2dafd8a6e7e"
 
 ffbuild_enabled() {

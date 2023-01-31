@@ -12,7 +12,7 @@ ffbuild_dockerbuild() {
     cd iconv
     git checkout "$SCRIPT_COMMIT"
 
-    ./gitsub.sh pull
+    ./autopull.sh --one-time || git-mini-clone "https://git.savannah.gnu.org/git/gnulib.git" "master" "gnulib"
     ./autogen.sh
 
     local myconf=(
