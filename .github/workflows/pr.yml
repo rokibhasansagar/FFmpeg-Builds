@@ -29,8 +29,6 @@ jobs:
           driver: docker
       - name: Build Image
         run: ./makeimage.sh ${{ matrix.target }} ${{ matrix.variant }}
-        env:
-          QUICKBUILD: ${{ matrix.quickbuild }}
       - name: Build ffmpeg
         run: ./build.sh ${{ matrix.target }} ${{ matrix.variant }}
       - name: Upload artifacts

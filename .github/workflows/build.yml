@@ -123,7 +123,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [linux64,win64,linuxarm64]
+        target: [linux64,win64]
         variant: [nonfree,gpl,nonfree 5.1,gpl 5.1,nonfree-shared,gpl-shared,nonfree-shared 5.1,gpl-shared 5.1]
     steps:
       - name: Checkout
@@ -178,7 +178,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [linux64,win64,linuxarm64]
+        target: [linux64,win64]
         variant: [nonfree,gpl,nonfree 5.1,gpl 5.1,nonfree-shared,gpl-shared,nonfree-shared 5.1,gpl-shared 5.1]
     steps:
       - name: Checkout
