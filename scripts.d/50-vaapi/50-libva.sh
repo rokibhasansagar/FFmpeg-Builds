@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://github.com/intel/libva.git"
-SCRIPT_COMMIT="b75818c092367723c76e716c56d3ef9765ce9e51"
+SCRIPT_COMMIT="9ac72efe2e123321d8fd5500fb1aca51cd31bc97"
 
 ffbuild_enabled() {
     [[ $TARGET != linux* ]] && return -1
