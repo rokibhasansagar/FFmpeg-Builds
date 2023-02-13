@@ -2,17 +2,25 @@
 
 SCRIPT_REPO="https://git.savannah.gnu.org/git/libiconv.git"
 SCRIPT_COMMIT="0a05ca75c08ae899f6fca5f79254491e13ffb500"
+SCRIPT_REPO2="https://repo.or.cz/libiconv.git"
+SCRIPT_BRANCH2="master"
 
 ffbuild_enabled() {
     return 0
 }
 
 ffbuild_dockerbuild() {
-    retry-tool sh -c "rm -rf iconv && git clone '$SCRIPT_REPO' iconv"
+    git-mini-clone "$SCRIPT_REPO" "$SCRIPT_COMMIT" iconv || {
+        rm -rf iconv 2>/dev/null
+        git-mini-clone "$SCRIPT_REPO2" "${SCRIPT_BRANCH2}" iconv
+    }
     cd iconv
     git checkout "$SCRIPT_COMMIT"
 
-    ./autopull.sh --one-time || git-mini-clone "https://git.savannah.gnu.org/git/gnulib.git" "master" "gnulib"
+    ./autopull.sh --one-time || {
+        rm -rf gnulib 2>/dev/null
+        git-mini-clone "https://repo.or.cz/gnulib.git" "master" "gnulib"
+    }
     ./autogen.sh
 
     local myconf=(
