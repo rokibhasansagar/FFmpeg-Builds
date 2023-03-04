@@ -15,6 +15,7 @@ ffbuild_dockerbuild() {
         git-mini-clone "$SCRIPT_REPO2" "${SCRIPT_BRANCH2}" iconv
     }
     cd iconv
+    git checkout "$SCRIPT_COMMIT"
 
     ./autopull.sh --one-time || {
         rm -rf gnulib 2>/dev/null
