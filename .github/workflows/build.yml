@@ -101,7 +101,7 @@ jobs:
       fail-fast: false
       matrix:
         target: [linux64,win64]
-        variant: [nonfree,gpl,nonfree 5.1,gpl 5.1,nonfree-shared,gpl-shared,nonfree-shared 5.1,gpl-shared 5.1]
+        variant: [nonfree,gpl,nonfree 5.1,gpl 5.1,nonfree 6.0,gpl 6.0,nonfree-shared,gpl-shared,nonfree-shared 5.1,gpl-shared 5.1,nonfree-shared 6.0,gpl-shared 6.0]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -145,7 +145,7 @@ jobs:
       fail-fast: false
       matrix:
         target: [linux64,win64]
-        variant: [nonfree,gpl,nonfree 5.1,gpl 5.1,nonfree-shared,gpl-shared,nonfree-shared 5.1,gpl-shared 5.1]
+        variant: [nonfree,gpl,nonfree 5.1,gpl 5.1,nonfree 6.0,gpl 6.0,nonfree-shared,gpl-shared,nonfree-shared 5.1,gpl-shared 5.1,nonfree-shared 6.0,gpl-shared 6.0]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
