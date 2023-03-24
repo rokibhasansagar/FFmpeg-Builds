@@ -2,13 +2,18 @@
 
 SCRIPT_REPO="https://git.savannah.gnu.org/git/libiconv.git"
 SCRIPT_COMMIT="c593e206b2d4bc689950c742a0fb00b8013756a0"
+SCRIPT_REPO2="https://repo.or.cz/libiconv.git"
+SCRIPT_BRANCH2="master"
 
 ffbuild_enabled() {
     return 0
 }
 
 ffbuild_dockerbuild() {
-    retry-tool sh -c "rm -rf iconv && git clone '$SCRIPT_REPO' iconv"
+    git-mini-clone "$SCRIPT_REPO" "$SCRIPT_COMMIT" iconv || {
+        rm -rf iconv 2>/dev/null
+        git-mini-clone "$SCRIPT_REPO2" "${SCRIPT_BRANCH2}" iconv
+    }
     cd iconv
     git checkout "$SCRIPT_COMMIT"
 
