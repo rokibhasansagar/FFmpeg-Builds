@@ -22,14 +22,9 @@ ffbuild_dockerbuild() {
         -Dtests=disabled
     )
 
-    if [[ $TARGET == win* || $TARGET == linux* ]]; then
-        myconf+=(
-            --cross-file=/cross.meson
-        )
-    else
-        echo "Unknown target"
-        return -1
-    fi
+    CC="${FFBUILD_CROSS_PREFIX}gcc" CXX="${FFBUILD_CROSS_PREFIX}g++" ./waf configure "${mywaf[@]}"
+    ./waf -j4
+    ./waf install
 
     meson "${myconf[@]}" ..
     ninja -j4

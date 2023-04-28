@@ -1,10 +1,13 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://code.videolan.org/videolan/libplacebo.git"
-SCRIPT_COMMIT="bc0fcb9689c282cd631fc37d1b6a67715cfd5fa0"
+SCRIPT_COMMIT="2b2de17e6b6ce1956f5084f6bb7621119ca0eb50"
 
 ffbuild_enabled() {
     [[ $ADDINS_STR == *4.4* ]] && return -1
+    [[ $ADDINS_STR == *5.0* ]] && return -1
+    [[ $ADDINS_STR == *5.1* ]] && return -1
+    [[ $ADDINS_STR == *6.0* ]] && return -1
     return 0
 }
 
