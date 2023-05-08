@@ -45,7 +45,10 @@ jobs:
           password: ${{ github.token }}
       - name: Image Name
         id: imagename
-        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}/base" >> $GITHUB_OUTPUT
+        run: |
+          IMG="${GITHUB_REPOSITORY,,}/base"
+          echo "name=ghcr.io/${IMG/ /-}" >> $GITHUB_OUTPUT
+          echo "rawname=${IMG/ /-}" >> $GITHUB_OUTPUT
       - name: Stop Commands
         run: T="$(echo -n ${{ github.token }} | sha256sum | head -c 64)" && echo -e "::add-mask::${T}\n::stop-commands::${T}"
       - name: Build target base image
@@ -92,7 +95,10 @@ jobs:
           password: ${{ github.token }}
       - name: Image Name
         id: imagename
-        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}/base-${{ matrix.target }}" >> $GITHUB_OUTPUT
+        run: |
+          IMG="${GITHUB_REPOSITORY,,}/base-${{ matrix.target }}"
+          echo "name=ghcr.io/${IMG/ /-}" >> $GITHUB_OUTPUT
+          echo "rawname=${IMG/ /-}" >> $GITHUB_OUTPUT
       - name: Stop Commands
         run: T="$(echo -n ${{ github.token }} | sha256sum | head -c 64)" && echo -e "::add-mask::${T}\n::stop-commands::${T}"
       - name: Build target base image
@@ -124,7 +130,7 @@ jobs:
       fail-fast: false
       matrix:
         target: [linux64,win64]
-        variant: [nonfree,gpl,nonfree 5.1,gpl 5.1,nonfree 6.0,gpl 6.0,nonfree-shared,gpl-shared,nonfree-shared 5.1,gpl-shared 5.1,nonfree-shared 6.0,gpl-shared 6.0]
+        variant: [gpl,lgpl,gpl 4.4,gpl 5.1,gpl 6.0,lgpl 4.4,lgpl 5.1,lgpl 6.0,gpl-shared,lgpl-shared,gpl-shared 4.4,gpl-shared 5.1,gpl-shared 6.0,lgpl-shared 4.4,lgpl-shared 5.1,lgpl-shared 6.0]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -143,8 +149,9 @@ jobs:
       - name: Image Name
         id: imagename
         run: |
-          IMG="ghcr.io/${GITHUB_REPOSITORY,,}/${{ matrix.target }}-${{ matrix.variant }}"
-          echo "name=${IMG/ /-}" >> $GITHUB_OUTPUT
+          IMG="${GITHUB_REPOSITORY,,}/${{ matrix.target }}-${{ matrix.variant }}"
+          echo "name=ghcr.io/${IMG/ /-}" >> $GITHUB_OUTPUT
+          echo "rawname=${IMG/ /-}" >> $GITHUB_OUTPUT
           echo "gh_repo=${GITHUB_REPOSITORY,,}" >> $GITHUB_OUTPUT
       - name: Stop Commands
         run: T="$(echo -n ${{ github.token }} | sha256sum | head -c 64)" && echo -e "::add-mask::${T}\n::stop-commands::${T}"
@@ -178,8 +185,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [linux64,win64]
-        variant: [nonfree,gpl,nonfree 5.1,gpl 5.1,nonfree 6.0,gpl 6.0,nonfree-shared,gpl-shared,nonfree-shared 5.1,gpl-shared 5.1,nonfree-shared 6.0,gpl-shared 6.0]
+        target: [linux64,win64,linuxarm64]
+        variant: [gpl,lgpl,gpl 4.4,gpl 5.1,gpl 6.0,lgpl 4.4,lgpl 5.1,lgpl 6.0,gpl-shared,lgpl-shared,gpl-shared 4.4,gpl-shared 5.1,gpl-shared 6.0,lgpl-shared 4.4,lgpl-shared 5.1,lgpl-shared 6.0]
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -220,7 +227,7 @@ jobs:
           RELDATE="$(date +'%Y-%m-%d %H:%M')"
           NAME="Auto-Build $RELDATE"
           TAGNAME="autobuild-$(date +'%Y-%m-%d-%H-%M')"
-          hub release create $(for a in artifacts/*.{zip,tar.xz}; do echo -a $a; done) -m "$NAME" -t "master" "$TAGNAME"
+          hub release create $(for a in artifacts/*.{7z,tar.xz}; do echo -a $a; done) -m "$NAME" -t "master" "$TAGNAME"
           echo "tag_name=${TAGNAME}" >> $GITHUB_OUTPUT
           echo "rel_date=${RELDATE}" >> $GITHUB_OUTPUT
         env:
@@ -230,7 +237,7 @@ jobs:
           set -xe
           shopt -s nullglob
           mkdir latest_artifacts
-          ./util/repack_latest.sh latest_artifacts artifacts/*.{zip,tar.xz}
+          ./util/repack_latest.sh latest_artifacts artifacts/*.{7z,tar.xz}
           NAME="Latest Auto-Build (${{ steps.create_release.outputs.rel_date }})"
           TAGNAME="latest"
           hub release delete "$TAGNAME" || true

@@ -23,9 +23,14 @@ ffbuild_dockerbuild() {
         -Dbindings_py=disabled
     )
 
-    CC="${FFBUILD_CROSS_PREFIX}gcc" CXX="${FFBUILD_CROSS_PREFIX}g++" ./waf configure "${mywaf[@]}"
-    ./waf -j4
-    ./waf install
+    if [[ $TARGET == win* || $TARGET == linux* ]]; then
+        myconf+=(
+            --cross-file=/cross.meson
+        )
+    else
+        echo "Unknown target"
+        return -1
+    fi
 
     meson "${myconf[@]}" ..
     ninja -j4

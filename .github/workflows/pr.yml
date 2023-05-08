@@ -18,7 +18,18 @@ jobs:
       fail-fast: false
       matrix:
         target: [linux64,win64,linuxarm64]
-        variant: [nonfree 5.1,gpl 5.1,lgpl 5.1,nonfree-shared 5.1,gpl-shared 5.1,lgpl-shared 5.1,nonfree 6.0,gpl 6.0,lgpl 6.0,nonfree-shared 6.0,gpl-shared 6.0,lgpl-shared 6.0]
+        variant: [lgpl,gpl 6.0,gpl 5.1,lgpl 6.0,lgpl 5.1,gpl-shared,lgpl-shared,gpl-shared 6.0,gpl-shared 5.1,lgpl-shared 6.0,lgpl-shared 5.1]
+        quickbuild: [1]
+        include:
+          - target: win64
+            variant: gpl
+            quickbuild: ''
+          - target: linux64
+            variant: gpl
+            quickbuild: ''
+          - target: linuxarm64
+            variant: gpl
+            quickbuild: ''
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -29,6 +40,8 @@ jobs:
           driver: docker
       - name: Build Image
         run: ./makeimage.sh ${{ matrix.target }} ${{ matrix.variant }}
+        env:
+          QUICKBUILD: ${{ matrix.quickbuild }}
       - name: Build ffmpeg
         run: ./build.sh ${{ matrix.target }} ${{ matrix.variant }}
       - name: Upload artifacts

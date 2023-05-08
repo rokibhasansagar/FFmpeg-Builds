@@ -24,8 +24,8 @@ while [[ $# -gt 0 ]]; do
         rm -rf "$REPACK_DIR"
         mkdir "$REPACK_DIR"
 
-        if [[ $INPUT == *.zip ]]; then
-            unzip "$INPUT" -d "$REPACK_DIR"
+        if [[ $INPUT == *.7z ]]; then
+            7z e "$INPUT" -o"$REPACK_DIR"
         elif [[ $INPUT == *.tar.xz ]]; then
             tar xvaf "$INPUT" -C "$REPACK_DIR"
         else
@@ -52,8 +52,8 @@ while [[ $# -gt 0 ]]; do
 
         mv "$INAME" "$ONAME"
 
-        if [[ $INPUT == *.zip ]]; then
-            zip -9 -r "$RELEASE_DIR/$ONAME.zip" "$ONAME"
+        if [[ $INPUT == *.7z ]]; then
+            7z a -t7z -m0=lzma -mx=9 -mfb=64 -md=32m "$RELEASE_DIR/$ONAME.7z" "$ONAME"
         elif [[ $INPUT == *.tar.xz ]]; then
             tar -I'xz -9' -cvf "$RELEASE_DIR/$ONAME.tar.xz" "$ONAME"
         fi

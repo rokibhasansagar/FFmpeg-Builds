@@ -89,8 +89,8 @@ package_variant ffbuild/prefix "ffbuild/pkgroot/$BUILD_NAME"
 
 cd ffbuild/pkgroot
 if [[ "${TARGET}" == win* ]]; then
-    OUTPUT_FNAME="${BUILD_NAME}.zip"
-    zip -9 -r "${ARTIFACTS_PATH}/${OUTPUT_FNAME}" "$BUILD_NAME"
+    OUTPUT_FNAME="${BUILD_NAME}.7z"
+    7z a -t7z -m0=lzma -mx=9 -mfb=64 -md=32m "${ARTIFACTS_PATH}/${OUTPUT_FNAME}" "$BUILD_NAME"
 else
     OUTPUT_FNAME="${BUILD_NAME}.tar.xz"
     tar -I'xz -9' -cf "${ARTIFACTS_PATH}/${OUTPUT_FNAME}" "$BUILD_NAME"
