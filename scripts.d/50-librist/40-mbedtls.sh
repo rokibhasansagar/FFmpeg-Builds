@@ -21,8 +21,3 @@ ffbuild_dockerbuild() {
     make -j4
     make install
 }
-
-ffbuild_configure() {
-    [[ $TARGET == win* ]] && return -1
-    echo --enable-mbedtls
-}
