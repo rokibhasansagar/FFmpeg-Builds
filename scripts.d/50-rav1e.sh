@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://github.com/xiph/rav1e.git"
-SCRIPT_COMMIT="f178e974bf6cd874b417c1b65f30993974b29bca"
+SCRIPT_COMMIT="80d0ff2df4785e0d3b0050205541914faffd583d"
 
 ffbuild_enabled() {
     [[ $TARGET == win32 ]] && return -1
@@ -13,21 +13,11 @@ ffbuild_dockerbuild() {
     cd rav1e
 
     local myconf=(
-        --prefix="$FFBUILD_PREFIX" \
-        --library-type=staticlib \
-        --crt-static \
+        --prefix="$FFBUILD_PREFIX"
+        --library-type=staticlib
+        --crt-static
+        --release
     )
-
-    if [[ $TARGET == win_not_yet ]]; then
-        # CHECKME: back to release once lto is fixed
-        myconf+=(
-            --profile release-no-lto
-        )
-    else
-        myconf+=(
-            --release
-        )
-    fi
 
     if [[ -n "$FFBUILD_RUST_TARGET" ]]; then
         unset PKG_CONFIG_LIBDIR
@@ -53,6 +43,8 @@ EOF
     fi
 
     cargo cinstall -v "${myconf[@]}"
+
+    chmod 644 "${FFBUILD_PREFIX}"/lib/*rav1e*
 }
 
 ffbuild_configure() {
