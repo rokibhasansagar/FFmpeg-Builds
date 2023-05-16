@@ -9,7 +9,7 @@ ffbuild_enabled() {
 }
 
 ffbuild_dockerbuild() {
-    git-mini-clone "$SCRIPT_REPO" "$SCRIPT_COMMIT" vidstab
+    git-mini-clone "$SCRIPT_REPO" "$SCRIPT_COMMIT_PINNED" vidstab
     cd vidstab
 
     mkdir build && cd build
