@@ -14,7 +14,7 @@ ffbuild_dockerbuild() {
 
     git-mini-clone "$SCRIPT_REPO2" "${SCRIPT_BRANCH}" gnulib
 
-    ./autogen.sh
+    (unset CC CFLAGS GMAKE && ./autogen.sh)
 
     local myconf=(
         --prefix="$FFBUILD_PREFIX"
