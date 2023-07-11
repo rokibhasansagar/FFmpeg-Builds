@@ -1,5 +1,6 @@
 #!/bin/bash
 
+<<<<<<< HEAD
 SCRIPT_REPO1="https://repo.or.cz/libiconv.git"
 SCRIPT_REPO2="https://repo.or.cz/gnulib.git"
 SCRIPT_BRANCH="master"
@@ -9,8 +10,7 @@ ffbuild_enabled() {
 }
 
 ffbuild_dockerdl() {
-    to_df "RUN git-mini-clone \"$SCRIPT_REPO1\" \"$SCRIPT_BRANCH\" \"$SELF\""
-    to_df "RUN cd \"$SELF\" && git-mini-clone \"$SCRIPT_REPO2\" \"$SCRIPT_BRANCH\" gnulib"
+    to_df "RUN git-mini-clone \"$SCRIPT_REPO1\" \"$SCRIPT_BRANCH\" \"$SELF\" && cd \"$SELF\" && git-mini-clone \"$SCRIPT_REPO2\" \"$SCRIPT_BRANCH\" gnulib"
 }
 
 ffbuild_dockerbuild() {
