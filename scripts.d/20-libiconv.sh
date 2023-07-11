@@ -1,6 +1,5 @@
 #!/bin/bash
 
-<<<<<<< HEAD
 SCRIPT_REPO1="https://repo.or.cz/libiconv.git"
 SCRIPT_REPO2="https://repo.or.cz/gnulib.git"
 SCRIPT_BRANCH="master"
