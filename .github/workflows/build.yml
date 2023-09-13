@@ -18,8 +18,8 @@ on:
         default: false
         required: false
   schedule:
-    # Runs at 01:00 UTC on roughly every 4th day of every month
-    - cron: '0 1 1,5,9,13,17,21,25,29 1-12 ?'
+    # Runs at 01:00 UTC on roughly every 5th day of every month
+    - cron: '0 1 1,6,11,16,21,26 1-12 ?'
 
 env:
   DOCKER_BUILDKIT: 1
