@@ -58,7 +58,7 @@ ffbuild_dockerbuild() {
     export LDFLAFS="$RAW_LDFLAGS"
 
     meson "${myconf[@]}" ..
-    ninja -j"$(nproc)"
+    ninja -j4
     ninja install
 
     if [[ $TARGET == linux* ]]; then
