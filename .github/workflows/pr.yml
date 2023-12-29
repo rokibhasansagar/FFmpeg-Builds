@@ -18,7 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         target: [linux64,win64,linuxarm64]
-        variant: [nonfree,gpl 6.0,gpl 5.1,nonfree 6.0,nonfree 5.1,gpl-shared,nonfree-shared,gpl-shared 6.0,gpl-shared 5.1,nonfree-shared 6.0,nonfree-shared 5.1]
+        variant: [nonfree,gpl 6.1,gpl 5.1,nonfree 6.1,nonfree 5.1,gpl-shared,nonfree-shared,gpl-shared 6.1,gpl-shared 5.1,nonfree-shared 6.1,nonfree-shared 5.1]
         quickbuild: [1]
         include:
           - target: win64
@@ -40,6 +40,17 @@ jobs:
         with:
           config: .github/buildkit.toml
           driver: docker
+      - name: Get download cache key
+        id: dl_cache
+        run: |
+          echo "dltagname=$(./util/get_dl_cache_tag.sh)" >> $GITHUB_OUTPUT
+      - name: Cache
+        uses: actions/cache/restore@v3
+        with:
+          path: .cache/downloads
+          key: download-cache-${{ steps.dl_cache.outputs.dltagname }}
+          restore-keys: |
+            download-cache-
       - name: Build Image
         run: ./makeimage.sh ${{ matrix.target }} ${{ matrix.variant }}
         env:

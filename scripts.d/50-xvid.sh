@@ -9,12 +9,10 @@ ffbuild_enabled() {
 }
 
 ffbuild_dockerdl() {
-    to_df "RUN retry-tool sh -c \"rm -rf xvid && svn checkout --username 'anonymous' --password '' '${SCRIPT_REPO}@${SCRIPT_REV}' xvid\""
+    echo "retry-tool sh -c \"rm -rf xvid && svn checkout --username 'anonymous' --password '' '${SCRIPT_REPO}@${SCRIPT_REV}' xvid\" && cd xvid"
 }
 
 ffbuild_dockerbuild() {
-    cd "$FFBUILD_DLDIR"/xvid
-
     cd build/generic
 
     # The original code fails on a two-digit major...
@@ -39,7 +37,7 @@ ffbuild_dockerbuild() {
     fi
 
     ./configure "${myconf[@]}"
-    make -j4
+    make -j$(nproc)
     make install
 
     if [[ $TARGET == win* ]]; then

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://github.com/mstorsjo/fdk-aac.git"
-SCRIPT_COMMIT="4de681c193d45b14f87efc30e3e3f02d389387b5"
+SCRIPT_COMMIT="c16d5d72c99a77c8bcb788a922323b0b59035803"
 
 ffbuild_enabled() {
     [[ $VARIANT == nonfree* ]] || return -1
@@ -9,8 +9,6 @@ ffbuild_enabled() {
 }
 
 ffbuild_dockerbuild() {
-    cd "$FFBUILD_DLDIR/$SELF"
-
     ./autogen.sh
 
     local myconf=(
@@ -31,7 +29,7 @@ ffbuild_dockerbuild() {
     fi
 
     ./configure "${myconf[@]}"
-    make -j4
+    make -j$(nproc)
     make install
 }
 

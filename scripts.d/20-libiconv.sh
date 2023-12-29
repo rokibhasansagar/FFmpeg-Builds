@@ -9,12 +9,11 @@ ffbuild_enabled() {
 }
 
 ffbuild_dockerdl() {
-    to_df "RUN git-mini-clone \"$SCRIPT_REPO1\" \"$SCRIPT_BRANCH\" \"$SELF\" && cd \"$SELF\" && git-mini-clone \"$SCRIPT_REPO2\" \"$SCRIPT_BRANCH\" gnulib"
+    echo "git-mini-clone \"$SCRIPT_REPO1\" \"$SCRIPT_BRANCH\" iconv"
+    echo "cd iconv && git-mini-clone \"$SCRIPT_REPO2\" \"$SCRIPT_BRANCH\" gnulib"
 }
 
 ffbuild_dockerbuild() {
-    cd "$FFBUILD_DLDIR/$SELF"
-
     (unset CC CFLAGS GMAKE && ./autogen.sh)
 
     local myconf=(
@@ -35,7 +34,7 @@ ffbuild_dockerbuild() {
     fi
 
     ./configure "${myconf[@]}"
-    make -j4
+    make -j$(nproc)
     make install
 }
 

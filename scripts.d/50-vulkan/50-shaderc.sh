@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://github.com/google/shaderc.git"
-SCRIPT_COMMIT="0d6f72f3ec57fe68377363d9e810385e6b6e37e1"
+SCRIPT_COMMIT="aaa44b544909600381e1a180074ed7f544e48410"
 
 ffbuild_enabled() {
     [[ $ADDINS_STR == *4.4* ]] && return -1
@@ -9,20 +9,18 @@ ffbuild_enabled() {
 }
 
 ffbuild_dockerdl() {
-    default_dl "$SELF"
-    to_df "RUN cd \"$SELF\" && ./utils/git-sync-deps"
+    default_dl .
+    echo "./utils/git-sync-deps"
 }
 
 ffbuild_dockerbuild() {
-    cd "$FFBUILD_DLDIR/$SELF"
-
     mkdir build && cd build
 
     cmake -GNinja -DCMAKE_TOOLCHAIN_FILE="$FFBUILD_CMAKE_TOOLCHAIN" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$FFBUILD_PREFIX" \
         -DSHADERC_SKIP_TESTS=ON -DSHADERC_SKIP_EXAMPLES=ON -DSHADERC_SKIP_COPYRIGHT_CHECK=ON \
         -DENABLE_EXCEPTIONS=ON -DENABLE_CTEST=OFF -DENABLE_GLSLANG_BINARIES=OFF -DSPIRV_SKIP_EXECUTABLES=ON \
         -DSPIRV_TOOLS_BUILD_STATIC=ON -DBUILD_SHARED_LIBS=OFF ..
-    ninja -j4
+    ninja -j$(nproc)
     ninja install
 
     # for some reason, this does not get installed...

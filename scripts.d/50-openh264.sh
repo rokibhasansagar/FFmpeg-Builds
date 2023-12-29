@@ -1,15 +1,13 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://github.com/cisco/openh264.git"
-SCRIPT_COMMIT="15d02fc4dd89bde3fd50d0986c3c2e79ea2f3fac"
+SCRIPT_COMMIT="cfbd5896606b91638c8871ee91776dee31625bd5"
 
 ffbuild_enabled() {
     return 0
 }
 
 ffbuild_dockerbuild() {
-    cd "$FFBUILD_DLDIR/$SELF"
-
     local myconf=(
         PREFIX="$FFBUILD_PREFIX"
         INCLUDE_PREFIX="$FFBUILD_PREFIX"/include/wels
@@ -46,7 +44,7 @@ ffbuild_dockerbuild() {
         return -1
     fi
 
-    make -j4 "${myconf[@]}" install-static
+    make -j$(nproc) "${myconf[@]}" install-static
 }
 
 ffbuild_configure() {

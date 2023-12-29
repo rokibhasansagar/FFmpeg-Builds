@@ -31,7 +31,7 @@ ffbuild_dockerbuild() {
     fi
 
     ./configure "${myconf[@]}"
-    make -j4
+    make -j$(nproc)
     make install
 
     ln -s libmfx.pc "$FFBUILD_PREFIX"/lib/pkgconfig/mfx.pc

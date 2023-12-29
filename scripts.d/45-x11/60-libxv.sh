@@ -10,8 +10,6 @@ ffbuild_enabled() {
 }
 
 ffbuild_dockerbuild() {
-    cd "$FFBUILD_DLDIR/$SELF"
-
     autoreconf -i
 
     local myconf=(
@@ -41,7 +39,7 @@ ffbuild_dockerbuild() {
     export LDFLAFS="$RAW_LDFLAGS"
 
     ./configure "${myconf[@]}"
-    make -j4
+    make -j$(nproc)
     make install
 
     gen-implib "$FFBUILD_PREFIX"/lib/{libXv.so.1,libXv.a}

@@ -5,7 +5,7 @@ RUN --mount=src=ct-ng-config,dst=/.config \
     git clone --filter=blob:none https://github.com/crosstool-ng/crosstool-ng.git /ct-ng && cd /ct-ng && \
     ./bootstrap && \
     ./configure --enable-local && \
-    make -j4 && \
+    make -j$(nproc) && \
     cp /.config .config && \
     ./ct-ng build && \
     cd / && \

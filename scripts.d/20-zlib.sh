@@ -1,15 +1,13 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://github.com/madler/zlib.git"
-SCRIPT_COMMIT="ac8f12c97d1afd9bafa9c710f827d40a407d3266"
+SCRIPT_COMMIT="643e17b7498d12ab8d15565662880579692f769d"
 
 ffbuild_enabled() {
     return 0
 }
 
 ffbuild_dockerbuild() {
-    cd "$FFBUILD_DLDIR/$SELF"
-
     local myconf=(
         --prefix="$FFBUILD_PREFIX"
         --static
@@ -24,7 +22,7 @@ ffbuild_dockerbuild() {
     fi
 
     ./configure "${myconf[@]}"
-    make -j4
+    make -j$(nproc)
     make install
 }
 

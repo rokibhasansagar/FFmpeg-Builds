@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://gitlab.freedesktop.org/mesa/drm.git"
-SCRIPT_COMMIT="5254fd1146b95a86fef1bb8e950d0146d829f3c4"
+SCRIPT_COMMIT="02a41cf302a69f0cd94aae96ec01d98b9398076e"
 
 ffbuild_enabled() {
     [[ $TARGET != linux* ]] && return -1
@@ -9,8 +9,6 @@ ffbuild_enabled() {
 }
 
 ffbuild_dockerbuild() {
-    cd "$FFBUILD_DLDIR/$SELF"
-
     mkdir build && cd build
 
     local myconf=(
@@ -42,7 +40,7 @@ ffbuild_dockerbuild() {
     export LDFLAFS="$RAW_LDFLAGS"
 
     meson "${myconf[@]}" ..
-    ninja -j4
+    ninja -j$(nproc)
     ninja install
 
     gen-implib "$FFBUILD_PREFIX"/lib/{libdrm.so.2,libdrm.a}

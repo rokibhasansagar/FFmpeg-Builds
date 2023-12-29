@@ -14,10 +14,8 @@ ffbuild_dockerlayer() {
 }
 
 ffbuild_dockerbuild() {
-    cd "$FFBUILD_DLDIR/$SELF"
-
     autoreconf -i
     ./configure --prefix="$FFBUILD_PREFIX"
-    make -j4
+    make -j$(nproc)
     make install
 }
