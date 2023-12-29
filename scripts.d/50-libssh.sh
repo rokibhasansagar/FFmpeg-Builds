@@ -1,15 +1,13 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://git.libssh.org/projects/libssh.git"
-SCRIPT_COMMIT="66144f6f60074772c096889498e972a5d5eeb85d"
+SCRIPT_COMMIT="b3de3a33352a78214a534005e3e4f0576dcc9e17"
 
 ffbuild_enabled() {
     return 0
 }
 
 ffbuild_dockerbuild() {
-    cd "$FFBUILD_DLDIR/$SELF"
-
     mkdir build && cd build
 
     cmake -GNinja -DCMAKE_TOOLCHAIN_FILE="$FFBUILD_CMAKE_TOOLCHAIN" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$FFBUILD_PREFIX" \
@@ -17,12 +15,15 @@ ffbuild_dockerbuild() {
         -DWITH_EXAMPLES=OFF -DWITH_SERVER=OFF \
         -DWITH_SFTP=ON -DWITH_ZLIB=ON ..
 
-    ninja -j4
+    ninja -j$(nproc)
     ninja install
 
     {
         echo "Requires.private: libssl libcrypto zlib"
         echo "Cflags.private: -DLIBSSH_STATIC"
+        if [[ $TARGET == win* ]]; then
+            echo "Libs.private: -liphlpapi -lws2_32"
+        fi
     } >> "$FFBUILD_PREFIX"/lib/pkgconfig/libssh.pc
 }
 

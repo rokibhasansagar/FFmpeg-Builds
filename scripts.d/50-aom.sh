@@ -1,19 +1,17 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://aomedia.googlesource.com/aom"
-SCRIPT_COMMIT="dcde09ef547cdd8f4c5cf3190daaa45a191ef3b4"
+SCRIPT_COMMIT="7a2afe7f16eef73d1d79954c2704c8d7ab4772b9"
 
 ffbuild_enabled() {
     return 0
 }
 
 ffbuild_dockerstage() {
-    to_df "RUN --mount=src=${SELF},dst=/stage.sh --mount=src=/,dst=\$FFBUILD_DLDIR,from=${DL_IMAGE},rw --mount=src=patches/aom,dst=/patches run_stage /stage.sh"
+    to_df "RUN --mount=src=${SELF},dst=/stage.sh --mount=src=patches/aom,dst=/patches run_stage /stage.sh"
 }
 
 ffbuild_dockerbuild() {
-    cd "$FFBUILD_DLDIR/$SELF"
-
     for patch in /patches/*.patch; do
         echo "Applying $patch"
         git am < "$patch"
@@ -25,7 +23,7 @@ ffbuild_dockerbuild() {
     export CFLAGS="$CFLAGS -pthread -I/opt/ffbuild/include/libvmaf"
 
     cmake -DCMAKE_TOOLCHAIN_FILE="$FFBUILD_CMAKE_TOOLCHAIN" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$FFBUILD_PREFIX" -DBUILD_SHARED_LIBS=OFF -DENABLE_EXAMPLES=NO -DENABLE_TESTS=NO -DENABLE_TOOLS=NO -DCONFIG_TUNE_VMAF=1 ..
-    make -j4
+    make -j$(nproc)
     make install
 
     echo "Requires.private: libvmaf" >> "$FFBUILD_PREFIX/lib/pkgconfig/aom.pc"

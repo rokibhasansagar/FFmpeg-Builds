@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://bitbucket.org/multicoreware/x265_git.git"
-SCRIPT_COMMIT="8ee01d45b05cdbc9da89b884815257807a514bc8"
+SCRIPT_COMMIT="ce8642f22123f0b8cf105c88fc1e8af9888bd345"
 
 ffbuild_enabled() {
     [[ $VARIANT == lgpl* ]] && return -1
@@ -9,12 +9,10 @@ ffbuild_enabled() {
 }
 
 ffbuild_dockerdl() {
-    to_df "RUN git clone \"$SCRIPT_REPO\" \"$SELF\" && git -C \"$SELF\" checkout \"$SCRIPT_COMMIT\""
+    echo "git clone \"$SCRIPT_REPO\" . && git checkout \"$SCRIPT_COMMIT\""
 }
 
 ffbuild_dockerbuild() {
-    cd "$FFBUILD_DLDIR/$SELF"
-
     local common_config=(
         -DCMAKE_INSTALL_PREFIX="$FFBUILD_PREFIX"
         -DCMAKE_TOOLCHAIN_FILE="$FFBUILD_CMAKE_TOOLCHAIN"
@@ -40,7 +38,7 @@ all: 12bit/libx265.a 10bit/libx265.a 8bit/libx265.a
 .PHONY: all
 EOF
 
-        make -j4
+        make -j$(nproc)
 
         cd 8bit
         mv ../12bit/libx265.a ../8bit/libx265_main12.a
@@ -59,7 +57,7 @@ EOF
         mkdir 8bit
         cd 8bit
         cmake "${common_config[@]}" ../source
-        make -j4
+        make -j$(nproc)
     fi
 
     make install

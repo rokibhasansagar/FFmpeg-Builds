@@ -9,8 +9,6 @@ ffbuild_enabled() {
 }
 
 ffbuild_dockerbuild() {
-    cd "$FFBUILD_DLDIR/$SELF"
-
     autoreconf -i
 
     local myconf=(
@@ -45,7 +43,7 @@ ffbuild_dockerbuild() {
     export LDFLAFS="$RAW_LDFLAGS"
 
     ./configure "${myconf[@]}"
-    make -j4
+    make -j$(nproc)
     make install
 
     echo "Libs: -ldl" >> "$FFBUILD_PREFIX"/lib/pkgconfig/x11.pc

@@ -46,6 +46,7 @@ docker run --rm -v "$PWD:/uidtestdir" "$IMAGE" touch "/uidtestdir/$TESTFILE"
 DOCKERUID="$(stat -c "%u" "$TESTFILE")"
 rm -f "$TESTFILE"
 [[ "$DOCKERUID" != "$(id -u)" ]] && UIDARGS=( -u "$(id -u):$(id -g)" ) || UIDARGS=()
+unset TESTFILE
 
 rm -rf ffbuild
 mkdir ffbuild
@@ -70,13 +71,13 @@ cat <<EOF >"$BUILD_SCRIPT"
         --extra-cflags='$FF_CFLAGS' --extra-cxxflags='$FF_CXXFLAGS' \
         --extra-ldflags='$FF_LDFLAGS' --extra-ldexeflags='$FF_LDEXEFLAGS' --extra-libs='$FF_LIBS' \
         --extra-version="\$(date +%Y%m%d)"
-    make -j4 V=1
+    make -j$(nproc) V=1
     make install install-doc
 EOF
 
 [[ -t 1 ]] && TTY_ARG="-t" || TTY_ARG=""
 
-docker run --rm -i $TTY_ARG "${UIDARGS[@]}" -v $PWD/ffbuild:/ffbuild -v "$BUILD_SCRIPT":/build.sh "$IMAGE" bash /build.sh
+docker run --rm -i $TTY_ARG "${UIDARGS[@]}" -v "$PWD/ffbuild":/ffbuild -v "$BUILD_SCRIPT":/build.sh "$IMAGE" bash /build.sh
 
 mkdir -p artifacts
 ARTIFACTS_PATH="$PWD/artifacts"

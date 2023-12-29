@@ -9,18 +9,16 @@ ffbuild_enabled() {
 }
 
 ffbuild_dockerdl() {
-    to_df "RUN git clone \"$SCRIPT_REPO\" \"$SELF\" && git -C \"$SELF\" checkout \"$SCRIPT_COMMIT\""
+    echo "git clone \"$SCRIPT_REPO\" . && git checkout \"$SCRIPT_COMMIT\""
 }
 
 ffbuild_dockerbuild() {
-    cd "$FFBUILD_DLDIR/$SELF"
-
     mkdir build/linux
     cd build/linux
 
     cmake -DCMAKE_TOOLCHAIN_FILE="$FFBUILD_CMAKE_TOOLCHAIN" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$FFBUILD_PREFIX" \
         -DCOMPILE_10BIT=1 -DBUILD_SHARED_LIBS=NO ../..
-    make -j4
+    make -j$(nproc)
     make install
 }
 

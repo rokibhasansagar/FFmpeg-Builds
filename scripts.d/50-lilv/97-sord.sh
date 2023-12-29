@@ -8,8 +8,6 @@ ffbuild_enabled() {
 }
 
 ffbuild_dockerbuild() {
-    cd "$FFBUILD_DLDIR/$SELF"
-
     mkdir build && cd build
 
     local myconf=(
@@ -31,6 +29,6 @@ ffbuild_dockerbuild() {
     fi
 
     meson "${myconf[@]}" ..
-    ninja -j4
+    ninja -j$(nproc)
     ninja install
 }

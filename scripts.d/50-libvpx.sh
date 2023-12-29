@@ -1,15 +1,13 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://chromium.googlesource.com/webm/libvpx"
-SCRIPT_COMMIT="974c14578ca3a2ee411ef1dbf0e55ca2c33da036"
+SCRIPT_COMMIT="41ced868a69625372c95ff0b2bd5f90987516c3b"
 
 ffbuild_enabled() {
     return 0
 }
 
 ffbuild_dockerbuild() {
-    cd "$FFBUILD_DLDIR/$SELF"
-
     local myconf=(
         --disable-shared
         --enable-static
@@ -48,7 +46,7 @@ ffbuild_dockerbuild() {
     fi
 
     ./configure "${myconf[@]}"
-    make -j4
+    make -j$(nproc)
     make install
 
     # Work around strip breaking LTO symbol index

@@ -1,15 +1,13 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://chromium.googlesource.com/webm/libwebp"
-SCRIPT_COMMIT="deadc339d59dfe64a00b51decce2f6d9337ddeec"
+SCRIPT_COMMIT="d7a0506dcc9b7cf75742e16fd2707835d7ce003d"
 
 ffbuild_enabled() {
     return 0
 }
 
 ffbuild_dockerbuild() {
-    cd "$FFBUILD_DLDIR/$SELF"
-
     ./autogen.sh
 
     local myconf=(
@@ -38,7 +36,7 @@ ffbuild_dockerbuild() {
     fi
 
     ./configure "${myconf[@]}"
-    make -j4
+    make -j$(nproc)
     make install
 }
 
