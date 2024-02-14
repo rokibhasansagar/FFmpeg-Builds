@@ -68,7 +68,7 @@ jobs:
         run: |
           echo "dltagname=$(./util/get_dl_cache_tag.sh)" >> $GITHUB_OUTPUT
       - name: Cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .cache/downloads
           key: download-cache-${{ steps.dl_cache.outputs.dltagname }}
@@ -186,7 +186,7 @@ jobs:
       - name: Generate Dockerfile
         run: ./generate.sh ${{ matrix.target }} ${{ matrix.variant }}
       - name: Cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         with:
           path: .cache/downloads
           key: download-cache-${{ steps.dl_cache.outputs.dltagname }}
@@ -237,10 +237,16 @@ jobs:
         run: |
           T="$(echo -n ${{ github.token }} | sha256sum | head -c 64)" && echo -e "::add-mask::${T}\n::stop-commands::${T}"
           ./build.sh ${{ matrix.target }} ${{ matrix.variant }}
+      - name: Replace spaces in string
+        id: strs
+        run: |
+          SLUG="${{ matrix.target }}-${{ matrix.variant }}"
+          echo "artifact_slug=${SLUG// /-}" >> $GITHUB_OUTPUT
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: ffmpeg
+          name: ffmpeg-${{ steps.strs.outputs.artifact_slug }}
+          overwrite: true
           path: artifacts/*
           retention-days: 10
   publish_release:
@@ -254,9 +260,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: ffmpeg
+          pattern: ffmpeg-*
+          merge-multiple: true
           path: artifacts
       - name: Create release
         id: create_release

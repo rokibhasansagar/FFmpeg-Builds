@@ -45,7 +45,7 @@ jobs:
         run: |
           echo "dltagname=$(./util/get_dl_cache_tag.sh)" >> $GITHUB_OUTPUT
       - name: Cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         with:
           path: .cache/downloads
           key: download-cache-${{ steps.dl_cache.outputs.dltagname }}
@@ -57,9 +57,15 @@ jobs:
           QUICKBUILD: ${{ matrix.quickbuild }}
       - name: Build ffmpeg
         run: ./build.sh ${{ matrix.target }} ${{ matrix.variant }}
+      - name: Replace spaces in string
+        id: strs
+        run: |
+          SLUG="${{ matrix.target }}-${{ matrix.variant }}"
+          echo "artifact_slug=${SLUG// /-}" >> $GITHUB_OUTPUT
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: ffmpeg
+          name: ffmpeg-${{ steps.strs.outputs.artifact_slug }}
+          overwrite: true
           path: artifacts/*
           retention-days: 10
