@@ -23,7 +23,6 @@ on:
 
 env:
   DOCKER_BUILDKIT: 1
-  HAVE_CLEANUP_PAT: ${{ secrets.CLEANUP_PAT != '' }}
 
 jobs:
   build_base:
@@ -80,11 +79,10 @@ jobs:
           ./download.sh
           ./util/clean_cache.sh
       - name: Cleanup
-        if: ${{ env.HAVE_CLEANUP_PAT == 'true' }}
         continue-on-error: true
         uses: BtbN/delete-untagged-ghcr-action@main
         with:
-          token: ${{ secrets.CLEANUP_PAT }}
+          token: ${{ github.token }}
           package_name: ${{ steps.imagename.outputs.rawname }}
           repository_owner: ${{ github.repository_owner }}
           repository: ${{ github.repository }}
@@ -136,11 +134,10 @@ jobs:
           build-args: |
             GH_REPO=ghcr.io/${{ steps.imagename.outputs.gh_repo }}
       - name: Cleanup
-        if: ${{ env.HAVE_CLEANUP_PAT == 'true' }}
         continue-on-error: true
         uses: BtbN/delete-untagged-ghcr-action@main
         with:
-          token: ${{ secrets.CLEANUP_PAT }}
+          token: ${{ github.token }}
           package_name: ${{ steps.imagename.outputs.rawname }}
           repository_owner: ${{ github.repository_owner }}
           repository: ${{ github.repository }}
@@ -202,11 +199,10 @@ jobs:
           cache-to: type=registry,mode=max,ref=${{ steps.imagename.outputs.name }}:cache
           cache-from: type=registry,ref=${{ steps.imagename.outputs.name }}:cache
       - name: Cleanup
-        if: ${{ env.HAVE_CLEANUP_PAT == 'true' }}
         continue-on-error: true
         uses: BtbN/delete-untagged-ghcr-action@main
         with:
-          token: ${{ secrets.CLEANUP_PAT }}
+          token: ${{ github.token }}
           package_name: ${{ steps.imagename.outputs.rawname }}
           repository_owner: ${{ github.repository_owner }}
           repository: ${{ github.repository }}
