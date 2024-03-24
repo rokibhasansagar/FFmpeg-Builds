@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://github.com/libjxl/libjxl.git"
-SCRIPT_COMMIT="ef9a6fb4db5b3c6b71bae0c18faae0973a6c8340"
+SCRIPT_COMMIT="b49cdd52d94b49556b936b66136169b1528e2819"
 
 ffbuild_enabled() {
     [[ $ADDINS_STR == *4.4* ]] && return -1
@@ -22,7 +22,7 @@ ffbuild_dockerbuild() {
     if [[ $TARGET == linux* ]]; then
         # our glibc is too old(<2.25), and their detection fails for some reason
         export CXXFLAGS="$CXXFLAGS -DVQSORT_GETRANDOM=0 -DVQSORT_SECURE_SEED=0"
-    elif [[ $TARGET == win* ]]; then
+    elif [[ $TARGET == win32 || $TARGET == win64 ]]; then
         # Fix AVX2 related crash due to unaligned stack memory
         export CXXFLAGS="$CXXFLAGS -Wa,-muse-unaligned-vector-move"
         export CFLAGS="$CFLAGS -Wa,-muse-unaligned-vector-move"
