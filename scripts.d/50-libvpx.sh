@@ -1,9 +1,10 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://chromium.googlesource.com/webm/libvpx"
-SCRIPT_COMMIT="4340382bb0da7623ecd27c3bfc9e5bec576e9c46"
+SCRIPT_COMMIT="c29e63728316486082dd6083c2062434b441b77d"
 
 ffbuild_enabled() {
+    [[ $TARGET == winarm64 ]] && return -1
     return 0
 }
 
@@ -28,6 +29,11 @@ ffbuild_dockerbuild() {
     elif [[ $TARGET == win32 ]]; then
         myconf+=(
             --target=x86-win32-gcc
+        )
+        export CROSS="$FFBUILD_CROSS_PREFIX"
+    elif [[ $TARGET == winarm64 ]]; then
+        myconf+=(
+            --target=arm64-win64-gcc
         )
         export CROSS="$FFBUILD_CROSS_PREFIX"
     elif [[ $TARGET == linux64 ]]; then
