@@ -1,16 +1,15 @@
 #!/bin/bash
 
-SCRIPT_REPO1="https://repo.or.cz/libiconv.git"
-SCRIPT_REPO2="https://repo.or.cz/gnulib.git"
-SCRIPT_BRANCH="master"
+SCRIPT_REPO="https://git.savannah.gnu.org/git/libiconv.git"
+SCRIPT_COMMIT="ee9ea2e5bdefefbb3e8da4054805696719e4357a"
 
 ffbuild_enabled() {
     return 0
 }
 
 ffbuild_dockerdl() {
-    echo "git-mini-clone \"$SCRIPT_REPO1\" \"$SCRIPT_BRANCH\" iconv"
-    echo "cd iconv && git-mini-clone \"$SCRIPT_REPO2\" \"$SCRIPT_BRANCH\" gnulib"
+    echo "retry-tool sh -c \"rm -rf iconv && git clone '$SCRIPT_REPO' iconv\" && git -C iconv checkout \"$SCRIPT_COMMIT\""
+    echo "cd iconv && retry-tool ./autopull.sh --one-time"
 }
 
 ffbuild_dockerbuild() {
