@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_REPO="https://github.com/fraunhoferhhi/vvenc.git"
-SCRIPT_COMMIT="c306b2cfaca7a4da50b6d6195f277430524b1a7d"
+SCRIPT_COMMIT="a1996a8c12593c5ce116243bed7a65dd59489a8d"
 
 ffbuild_enabled() {
     [[ $TARGET != *32 ]] || return -1
@@ -23,7 +23,7 @@ ffbuild_dockerbuild() {
     fi
 
     cmake -DCMAKE_TOOLCHAIN_FILE="$FFBUILD_CMAKE_TOOLCHAIN" -DCMAKE_INSTALL_PREFIX="$FFBUILD_PREFIX" -DCMAKE_BUILD_TYPE=Release \
-        -DBUILD_SHARED_LIBS=OFF "${armsimd[@]}" ..
+        -DBUILD_SHARED_LIBS=OFF -DEXTRALIBS="-lstdc++" "${armsimd[@]}" ..
 
     make -j$(nproc)
     make install
