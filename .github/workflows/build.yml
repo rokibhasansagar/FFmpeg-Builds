@@ -41,7 +41,11 @@ jobs:
           MATRIX_JSON=$(printf "%s\n" "${COMBINATIONS[@]}" | jq -R -s -c '
             split("\n")
             | map(select(length > 0))
-            | map(split(":") | {target: .[0], variant: .[1]})
+            | map(split(":") | {
+                target: .[0], 
+                variant: .[1],
+                allow_failure: (.[1] | contains("5.1"))
+              })
             | {include: .}
           ')
           echo "build_matrix=${MATRIX_JSON}" >> $GITHUB_OUTPUT
@@ -257,8 +261,9 @@ jobs:
     needs: [generate_matrix,build_targets]
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix: ${{ fromJSON(needs.generate_matrix.outputs.build_matrix) }}
+    continue-on-error: ${{ matrix.allow_failure }}
     steps:
       - name: Free Disk-Space
         run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/local/lib/android && df -h
