@@ -20,6 +20,10 @@ on:
 
 env:
   DOCKER_BUILDKIT: 1
+  REMOVE_DEPS: >-
+    avisynth chromaprint davs2 dvd frei0r gme kvazaar libbluray
+    librist libssh libzmq lilv openal openapv openmpt pulseaudio
+    rav1e sdl snappy uavs3d whisper xavs2 xvid librsvg
 
 concurrency:
   group: ffmpeg-builds-${{ github.ref }}
@@ -36,7 +40,6 @@ jobs:
         run: |
           COMBINATIONS=(
             {win64,linux64}:nonfree{,-shared}{," 5.1"," 6.1"," 7.1"," 8.1"}
-            {winarm64,linuxarm64}:nonfree{,-shared}" 8.1"
           )
           MATRIX_JSON=$(printf "%s\n" "${COMBINATIONS[@]}" | jq -R -s -c '
             split("\n")
@@ -55,13 +58,30 @@ jobs:
     if: ${{ github.event.inputs.buildOnly != 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Free Disk-Space
-        run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/local/lib/android && df -h
       - name: Checkout
         uses: actions/checkout@v7
         with:
           repository: "BtbN/FFmpeg-Builds"
           fetch-depth: 0
+      - name: Free Disk-Space
+        run: ./util/free_disk_space.sh
+      - name: Apply minimal dependency set
+        run: |
+          awk -v drop="$REMOVE_DEPS" '
+            BEGIN {
+              n = split(drop, a, /[[:space:]]+/)
+              for (i = 1; i <= n; i++) rm[a[i]] = 1
+            }
+            /^    echo / {
+              dep = $0
+              sub(/^    echo /, "", dep)
+              if (dep in rm) next
+            }
+            { print }
+          ' scripts.d/zz-final.sh > scripts.d/zz-final.sh.tmp &&
+          mv scripts.d/zz-final.sh.tmp scripts.d/zz-final.sh
+          echo "=== Final dependency manifest ==="
+          sed -n '/^ffbuild_depends() {/,/^}/p' scripts.d/zz-final.sh
       - name: Install buildx
         uses: docker/setup-buildx-action@v4
         with:
@@ -137,15 +157,32 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [win64,winarm64,linux64,linuxarm64]
+        target: [win64,linux64]
     steps:
-      - name: Free Disk-Space
-        run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/local/lib/android && df -h
       - name: Checkout
         uses: actions/checkout@v7
         with:
           repository: "BtbN/FFmpeg-Builds"
           fetch-depth: 0
+      - name: Free Disk-Space
+        run: ./util/free_disk_space.sh
+      - name: Apply minimal dependency set
+        run: |
+          awk -v drop="$REMOVE_DEPS" '
+            BEGIN {
+              n = split(drop, a, /[[:space:]]+/)
+              for (i = 1; i <= n; i++) rm[a[i]] = 1
+            }
+            /^    echo / {
+              dep = $0
+              sub(/^    echo /, "", dep)
+              if (dep in rm) next
+            }
+            { print }
+          ' scripts.d/zz-final.sh > scripts.d/zz-final.sh.tmp &&
+          mv scripts.d/zz-final.sh.tmp scripts.d/zz-final.sh
+          echo "=== Final dependency manifest ==="
+          sed -n '/^ffbuild_depends() {/,/^}/p' scripts.d/zz-final.sh
       - name: Install buildx
         uses: docker/setup-buildx-action@v4
         with:
@@ -197,13 +234,30 @@ jobs:
       fail-fast: false
       matrix: ${{ fromJSON(needs.generate_matrix.outputs.build_matrix) }}
     steps:
-      - name: Free Disk-Space
-        run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/local/lib/android && df -h
       - name: Checkout
         uses: actions/checkout@v7
         with:
           repository: "BtbN/FFmpeg-Builds"
           fetch-depth: 0
+      - name: Free Disk-Space
+        run: ./util/free_disk_space.sh
+      - name: Apply minimal dependency set
+        run: |
+          awk -v drop="$REMOVE_DEPS" '
+            BEGIN {
+              n = split(drop, a, /[[:space:]]+/)
+              for (i = 1; i <= n; i++) rm[a[i]] = 1
+            }
+            /^    echo / {
+              dep = $0
+              sub(/^    echo /, "", dep)
+              if (dep in rm) next
+            }
+            { print }
+          ' scripts.d/zz-final.sh > scripts.d/zz-final.sh.tmp &&
+          mv scripts.d/zz-final.sh.tmp scripts.d/zz-final.sh
+          echo "=== Final dependency manifest ==="
+          sed -n '/^ffbuild_depends() {/,/^}/p' scripts.d/zz-final.sh
       - name: Install buildx
         uses: docker/setup-buildx-action@v4
         with:
@@ -265,13 +319,30 @@ jobs:
       matrix: ${{ fromJSON(needs.generate_matrix.outputs.build_matrix) }}
     continue-on-error: ${{ matrix.allow_failure }}
     steps:
-      - name: Free Disk-Space
-        run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/local/lib/android && df -h
       - name: Checkout
         uses: actions/checkout@v7
         with:
           repository: "BtbN/FFmpeg-Builds"
           fetch-depth: 0
+      - name: Free Disk-Space
+        run: ./util/free_disk_space.sh
+      - name: Apply minimal dependency set
+        run: |
+          awk -v drop="$REMOVE_DEPS" '
+            BEGIN {
+              n = split(drop, a, /[[:space:]]+/)
+              for (i = 1; i <= n; i++) rm[a[i]] = 1
+            }
+            /^    echo / {
+              dep = $0
+              sub(/^    echo /, "", dep)
+              if (dep in rm) next
+            }
+            { print }
+          ' scripts.d/zz-final.sh > scripts.d/zz-final.sh.tmp &&
+          mv scripts.d/zz-final.sh.tmp scripts.d/zz-final.sh
+          echo "=== Final dependency manifest ==="
+          sed -n '/^ffbuild_depends() {/,/^}/p' scripts.d/zz-final.sh
       - name: Login to Docker
         uses: docker/login-action@v4
         with:
@@ -302,13 +373,13 @@ jobs:
     steps:
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y libarchive-tools p7zip-full
-      - name: Free Disk-Space
-        run: df -h && sudo apt-get clean && docker system prune -a -f && sudo rm -rf /opt/ghc /usr/local/.ghcup /usr/local/lib/android && df -h
       - name: Checkout
         uses: actions/checkout@v7
         with:
           repository: "BtbN/FFmpeg-Builds"
           fetch-depth: 0
+      - name: Free Disk-Space
+        run: ./util/free_disk_space.sh
       - name: Checkout Self
         uses: actions/checkout@v7
         with:
