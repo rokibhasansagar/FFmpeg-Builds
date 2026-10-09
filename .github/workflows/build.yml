@@ -258,6 +258,19 @@ jobs:
           mv scripts.d/zz-final.sh.tmp scripts.d/zz-final.sh
           echo "=== Final dependency manifest ==="
           sed -n '/^ffbuild_depends() {/,/^}/p' scripts.d/zz-final.sh
+      - name: Configure LTO for FFmpeg only
+        run: |
+          cat > addins/lto.sh <<'EOF'
+          #!/bin/bash
+          FF_CONFIGURE="$FF_CONFIGURE --enable-lto"
+          FF_CFLAGS="$FF_CFLAGS -flto=auto"
+          FF_CXXFLAGS="$FF_CXXFLAGS -flto=auto"
+          FF_LDFLAGS="$FF_LDFLAGS -flto=auto"
+
+          ffbuild_dockeraddin() {
+              to_df 'ENV FFBUILD_TARGET_FLAGS="$FFBUILD_TARGET_FLAGS --ar=${FFBUILD_TOOLCHAIN}-gcc-ar --nm=${FFBUILD_TOOLCHAIN}-gcc-nm --ranlib=${FFBUILD_TOOLCHAIN}-gcc-ranlib"'
+          }
+          EOF
       - name: Install buildx
         uses: docker/setup-buildx-action@v4
         with:
@@ -343,6 +356,19 @@ jobs:
           mv scripts.d/zz-final.sh.tmp scripts.d/zz-final.sh
           echo "=== Final dependency manifest ==="
           sed -n '/^ffbuild_depends() {/,/^}/p' scripts.d/zz-final.sh
+      - name: Configure LTO for FFmpeg only
+        run: |
+          cat > addins/lto.sh <<'EOF'
+          #!/bin/bash
+          FF_CONFIGURE="$FF_CONFIGURE --enable-lto"
+          FF_CFLAGS="$FF_CFLAGS -flto=auto"
+          FF_CXXFLAGS="$FF_CXXFLAGS -flto=auto"
+          FF_LDFLAGS="$FF_LDFLAGS -flto=auto"
+
+          ffbuild_dockeraddin() {
+              to_df 'ENV FFBUILD_TARGET_FLAGS="$FFBUILD_TARGET_FLAGS --ar=${FFBUILD_TOOLCHAIN}-gcc-ar --nm=${FFBUILD_TOOLCHAIN}-gcc-nm --ranlib=${FFBUILD_TOOLCHAIN}-gcc-ranlib"'
+          }
+          EOF
       - name: Login to Docker
         uses: docker/login-action@v4
         with:
