@@ -353,6 +353,36 @@ jobs:
         run: |
           T="$(echo -n ${{ github.token }} | sha256sum | head -c 64)" && echo -e "::add-mask::${T}\n::stop-commands::${T}"
           ./build.sh ${{ matrix.target }} ${{ matrix.variant }}
+      - name: Print FFmpeg manifests
+        continue-on-error: true
+        if: ${{ matrix.target == 'linux64' && contains(matrix.variant, 'shared') }}
+        run: |
+          set -e
+          shopt -s nullglob
+          ARCHIVES=(artifacts/*.tar.xz)
+          [ "${#ARCHIVES[@]}" -gt 0 ]
+          rm -rf /tmp/ffmpeg-manifest
+          mkdir -p /tmp/ffmpeg-manifest
+          tar -xf "${ARCHIVES[0]}" -C /tmp/ffmpeg-manifest
+          FFMPEG="$(find /tmp/ffmpeg-manifest -type f -path '*/bin/ffmpeg' -print -quit)"
+          [ -n "$FFMPEG" ]
+          chmod +x "$FFMPEG"
+          echo "=== $FFMPEG -buildconf ==="
+          "$FFMPEG" -buildconf
+          echo "=== $FFMPEG -decoders ==="
+          "$FFMPEG" -decoders
+          echo "=== $FFMPEG -encoders ==="
+          "$FFMPEG" -encoders
+          echo "=== $FFMPEG -demuxers ==="
+          "$FFMPEG" -demuxers
+          echo "=== $FFMPEG -muxers ==="
+          "$FFMPEG" -muxers
+          echo "=== $FFMPEG -filters ==="
+          "$FFMPEG" -filters
+          echo "=== $FFMPEG -protocols ==="
+          "$FFMPEG" -protocols
+          echo "=== $FFMPEG -hwaccels ==="
+          "$FFMPEG" -hwaccels
       - name: Replace spaces in string
         id: strs
         run: |
@@ -423,6 +453,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Prune old releases
+        continue-on-error: true
         run: ../util/prunetags.sh
         working-directory: "self"
         env:
