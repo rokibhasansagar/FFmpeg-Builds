@@ -14,7 +14,6 @@ on:
         default: false
         required: false
   schedule:
-    # Runs at 02:10 UTC on roughly every 5th day of every month
     - cron: '10 2 1,11,21 * *'
     - cron: '10 2 6,16,26 * *'
 
@@ -35,8 +34,10 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       build_matrix: ${{ steps.matrix.outputs.build_matrix }}
+      target_matrix: ${{ steps.matrix.outputs.target_matrix }}
     steps:
       - id: matrix
+        shell: bash
         run: |
           COMBINATIONS=(
             {win64,linux64}:nonfree{,-shared}{," 5.1"," 6.1"," 7.1"," 8.1"}{," lto"}
@@ -45,43 +46,50 @@ jobs:
             split("\n")
             | map(select(length > 0))
             | map(split(":") | {
-                target: .[0], 
+                target: .[0],
                 variant: .[1],
                 allow_failure: (.[1] | (contains("5.1") or contains("lto")))
               })
             | {include: .}
           ')
-          echo "build_matrix=${MATRIX_JSON}" >> $GITHUB_OUTPUT
+          # Skip FFmpeg 5.1 and 6.1 on first cron schedule
+          if [[ "${GITHUB_EVENT_NAME}" == "schedule" && "${GITHUB_EVENT_SCHEDULE}" == "10 2 1,11,21 * *" ]]; then
+            MATRIX_JSON=$(jq -c '
+              .include |= map(
+                select((.variant | test(" (5\\.1|6\\.1)( |$)") | not))
+              )
+            ' <<< "$MATRIX_JSON")
+          fi
+          TARGET_MATRIX_JSON=$(jq -c '
+            {include: [.include[] | select((.variant | contains(" lto")) | not)]}
+          ' <<< "$MATRIX_JSON")
+          echo "build_matrix=${MATRIX_JSON}" >> "$GITHUB_OUTPUT"
+          echo "target_matrix=${TARGET_MATRIX_JSON}" >> "$GITHUB_OUTPUT"
 
   build_base:
     name: Build base image
     if: ${{ github.event.inputs.buildOnly != 'true' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout upstream source
         uses: actions/checkout@v7
         with:
-          repository: "BtbN/FFmpeg-Builds"
+          repository: BtbN/FFmpeg-Builds
           fetch-depth: 0
+      - name: Checkout workflow repository
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.sha }}
+          path: self
+          fetch-depth: 1
+      - name: Apply workflow patches
+        uses: ./self/.github/actions/ffmpeg-workflow-patches
+        with:
+          apply-dependencies: 'true'
+          patch-build-sh: 'false'
       - name: Free Disk-Space
         run: ./util/free_disk_space.sh
-      - name: Apply minimal dependency set
-        run: |
-          awk -v drop="$REMOVE_DEPS" '
-            BEGIN {
-              n = split(drop, a, /[[:space:]]+/)
-              for (i = 1; i <= n; i++) rm[a[i]] = 1
-            }
-            /^    echo / {
-              dep = $0
-              sub(/^    echo /, "", dep)
-              if (dep in rm) next
-            }
-            { print }
-          ' scripts.d/zz-final.sh > scripts.d/zz-final.sh.tmp &&
-          mv scripts.d/zz-final.sh.tmp scripts.d/zz-final.sh
-          echo "=== Final dependency manifest ==="
-          sed -n '/^ffbuild_depends() {/,/^}/p' scripts.d/zz-final.sh
       - name: Install buildx
         uses: docker/setup-buildx-action@v4
         with:
@@ -97,8 +105,8 @@ jobs:
         run: |
           IMG="${GITHUB_REPOSITORY,,}/base"
           IMG="${IMG// /-}"
-          echo "name=ghcr.io/${IMG}" >> $GITHUB_OUTPUT
-          echo "rawname=${IMG#*/}" >> $GITHUB_OUTPUT
+          echo "name=ghcr.io/${IMG}" >> "$GITHUB_OUTPUT"
+          echo "rawname=${IMG#*/}" >> "$GITHUB_OUTPUT"
       - name: Stop Commands
         run: T="$(echo -n ${{ github.token }} | sha256sum | head -c 64)" && echo -e "::add-mask::${T}\n::stop-commands::${T}"
       - name: Build target base image
@@ -114,8 +122,7 @@ jobs:
       - name: Get download cache key
         if: ${{ !cancelled() }}
         id: dl_cache
-        run: |
-          echo "dltagname=$(./util/get_dl_cache_tag.sh)" >> $GITHUB_OUTPUT
+        run: echo "dltagname=$(./util/get_dl_cache_tag.sh)" >> "$GITHUB_OUTPUT"
       - name: Cache
         if: ${{ !cancelled() }}
         uses: actions/cache@v6
@@ -149,6 +156,7 @@ jobs:
           repository: ${{ github.repository }}
           owner_type: user
           untagged_only: true
+
   build_target_bases:
     name: Build target base image
     if: ${{ github.event.inputs.buildOnly != 'true' }}
@@ -157,32 +165,27 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: [win64,linux64]
+        target: [win64, linux64]
     steps:
-      - name: Checkout
+      - name: Checkout upstream source
         uses: actions/checkout@v7
         with:
-          repository: "BtbN/FFmpeg-Builds"
+          repository: BtbN/FFmpeg-Builds
           fetch-depth: 0
+      - name: Checkout workflow repository
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.sha }}
+          path: self
+          fetch-depth: 1
+      - name: Apply workflow patches
+        uses: ./self/.github/actions/ffmpeg-workflow-patches
+        with:
+          apply-dependencies: 'true'
+          patch-build-sh: 'false'
       - name: Free Disk-Space
         run: ./util/free_disk_space.sh
-      - name: Apply minimal dependency set
-        run: |
-          awk -v drop="$REMOVE_DEPS" '
-            BEGIN {
-              n = split(drop, a, /[[:space:]]+/)
-              for (i = 1; i <= n; i++) rm[a[i]] = 1
-            }
-            /^    echo / {
-              dep = $0
-              sub(/^    echo /, "", dep)
-              if (dep in rm) next
-            }
-            { print }
-          ' scripts.d/zz-final.sh > scripts.d/zz-final.sh.tmp &&
-          mv scripts.d/zz-final.sh.tmp scripts.d/zz-final.sh
-          echo "=== Final dependency manifest ==="
-          sed -n '/^ffbuild_depends() {/,/^}/p' scripts.d/zz-final.sh
       - name: Install buildx
         uses: docker/setup-buildx-action@v4
         with:
@@ -198,9 +201,9 @@ jobs:
         run: |
           IMG="${GITHUB_REPOSITORY,,}/base-${{ matrix.target }}"
           IMG="${IMG// /-}"
-          echo "name=ghcr.io/${IMG}" >> $GITHUB_OUTPUT
-          echo "rawname=${IMG#*/}" >> $GITHUB_OUTPUT
-          echo "gh_repo=${GITHUB_REPOSITORY,,}" >> $GITHUB_OUTPUT
+          echo "name=ghcr.io/${IMG}" >> "$GITHUB_OUTPUT"
+          echo "rawname=${IMG#*/}" >> "$GITHUB_OUTPUT"
+          echo "gh_repo=${GITHUB_REPOSITORY,,}" >> "$GITHUB_OUTPUT"
       - name: Stop Commands
         run: T="$(echo -n ${{ github.token }} | sha256sum | head -c 64)" && echo -e "::add-mask::${T}\n::stop-commands::${T}"
       - name: Build target base image
@@ -225,52 +228,35 @@ jobs:
           repository: ${{ github.repository }}
           owner_type: user
           untagged_only: true
+
   build_targets:
     name: Build target-variant image
     if: ${{ github.event.inputs.buildOnly != 'true' }}
-    needs: [generate_matrix,build_target_bases]
+    needs: [generate_matrix, build_target_bases]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.generate_matrix.outputs.build_matrix) }}
+      matrix: ${{ fromJSON(needs.generate_matrix.outputs.target_matrix) }}
     steps:
-      - name: Checkout
+      - name: Checkout upstream source
         uses: actions/checkout@v7
         with:
-          repository: "BtbN/FFmpeg-Builds"
+          repository: BtbN/FFmpeg-Builds
           fetch-depth: 0
+      - name: Checkout workflow repository
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.sha }}
+          path: self
+          fetch-depth: 1
+      - name: Apply workflow patches
+        uses: ./self/.github/actions/ffmpeg-workflow-patches
+        with:
+          apply-dependencies: 'true'
+          patch-build-sh: 'false'
       - name: Free Disk-Space
         run: ./util/free_disk_space.sh
-      - name: Apply minimal dependency set
-        run: |
-          awk -v drop="$REMOVE_DEPS" '
-            BEGIN {
-              n = split(drop, a, /[[:space:]]+/)
-              for (i = 1; i <= n; i++) rm[a[i]] = 1
-            }
-            /^    echo / {
-              dep = $0
-              sub(/^    echo /, "", dep)
-              if (dep in rm) next
-            }
-            { print }
-          ' scripts.d/zz-final.sh > scripts.d/zz-final.sh.tmp &&
-          mv scripts.d/zz-final.sh.tmp scripts.d/zz-final.sh
-          echo "=== Final dependency manifest ==="
-          sed -n '/^ffbuild_depends() {/,/^}/p' scripts.d/zz-final.sh
-      - name: Configure LTO for FFmpeg only
-        run: |
-          cat > addins/lto.sh <<'EOF'
-          #!/bin/bash
-          FF_CONFIGURE="$FF_CONFIGURE --enable-lto"
-          FF_CFLAGS="$FF_CFLAGS -flto=auto"
-          FF_CXXFLAGS="$FF_CXXFLAGS -flto=auto"
-          FF_LDFLAGS="$FF_LDFLAGS -flto=auto"
-
-          ffbuild_dockeraddin() {
-              to_df 'ENV FFBUILD_TARGET_FLAGS="$FFBUILD_TARGET_FLAGS --ar=${FFBUILD_TOOLCHAIN}-gcc-ar --nm=${FFBUILD_TOOLCHAIN}-gcc-nm --ranlib=${FFBUILD_TOOLCHAIN}-gcc-ranlib"'
-          }
-          EOF
       - name: Install buildx
         uses: docker/setup-buildx-action@v4
         with:
@@ -286,12 +272,11 @@ jobs:
         run: |
           IMG="${GITHUB_REPOSITORY,,}/${{ matrix.target }}-${{ matrix.variant }}"
           IMG="${IMG// /-}"
-          echo "name=ghcr.io/${IMG}" >> $GITHUB_OUTPUT
-          echo "rawname=${IMG#*/}" >> $GITHUB_OUTPUT
+          echo "name=ghcr.io/${IMG}" >> "$GITHUB_OUTPUT"
+          echo "rawname=${IMG#*/}" >> "$GITHUB_OUTPUT"
       - name: Get download cache key
         id: dl_cache
-        run: |
-          echo "dltagname=$(./util/get_dl_cache_tag.sh)" >> $GITHUB_OUTPUT
+        run: echo "dltagname=$(./util/get_dl_cache_tag.sh)" >> "$GITHUB_OUTPUT"
       - name: Stop Commands
         run: T="$(echo -n ${{ github.token }} | sha256sum | head -c 64)" && echo -e "::add-mask::${T}\n::stop-commands::${T}"
       - name: Generate Dockerfile
@@ -322,59 +307,42 @@ jobs:
           repository: ${{ github.repository }}
           owner_type: user
           untagged_only: true
+
   build_ffmpeg:
     name: Build ffmpeg
-    if: ${{ ( github.event.inputs.buildOnly == 'true' && !cancelled() ) || success() }}
-    needs: [generate_matrix,build_targets]
+    if: ${{ (github.event.inputs.buildOnly == 'true' && !cancelled()) || success() }}
+    needs: [generate_matrix, build_targets]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
       matrix: ${{ fromJSON(needs.generate_matrix.outputs.build_matrix) }}
     continue-on-error: ${{ matrix.allow_failure }}
     steps:
-      - name: Checkout
+      - name: Checkout upstream source
         uses: actions/checkout@v7
         with:
-          repository: "BtbN/FFmpeg-Builds"
+          repository: BtbN/FFmpeg-Builds
           fetch-depth: 0
+      - name: Checkout workflow repository
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.sha }}
+          path: self
+          fetch-depth: 1
+      - name: Apply workflow patches
+        uses: ./self/.github/actions/ffmpeg-workflow-patches
+        with:
+          apply-dependencies: 'true'
+          patch-build-sh: 'true'
       - name: Free Disk-Space
         run: ./util/free_disk_space.sh
-      - name: Apply minimal dependency set
-        run: |
-          awk -v drop="$REMOVE_DEPS" '
-            BEGIN {
-              n = split(drop, a, /[[:space:]]+/)
-              for (i = 1; i <= n; i++) rm[a[i]] = 1
-            }
-            /^    echo / {
-              dep = $0
-              sub(/^    echo /, "", dep)
-              if (dep in rm) next
-            }
-            { print }
-          ' scripts.d/zz-final.sh > scripts.d/zz-final.sh.tmp &&
-          mv scripts.d/zz-final.sh.tmp scripts.d/zz-final.sh
-          echo "=== Final dependency manifest ==="
-          sed -n '/^ffbuild_depends() {/,/^}/p' scripts.d/zz-final.sh
-      - name: Configure LTO for FFmpeg only
-        run: |
-          cat > addins/lto.sh <<'EOF'
-          #!/bin/bash
-          FF_CONFIGURE="$FF_CONFIGURE --enable-lto"
-          FF_CFLAGS="$FF_CFLAGS -flto=auto"
-          FF_CXXFLAGS="$FF_CXXFLAGS -flto=auto"
-          FF_LDFLAGS="$FF_LDFLAGS -flto=auto"
-
-          ffbuild_dockeraddin() {
-              to_df 'ENV FFBUILD_TARGET_FLAGS="$FFBUILD_TARGET_FLAGS --ar=${FFBUILD_TOOLCHAIN}-gcc-ar --nm=${FFBUILD_TOOLCHAIN}-gcc-nm --ranlib=${FFBUILD_TOOLCHAIN}-gcc-ranlib"'
-          }
-          EOF
       - name: Login to Docker
         uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN}}
+          password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build ffmpeg
         run: |
           T="$(echo -n ${{ github.token }} | sha256sum | head -c 64)" && echo -e "::add-mask::${T}\n::stop-commands::${T}"
@@ -394,26 +362,26 @@ jobs:
           [ -n "$FFMPEG" ]
           chmod +x "$FFMPEG"
           echo "=== $FFMPEG -buildconf ==="
-          "$FFMPEG" -buildconf
+          "$FFMPEG" -hide_banner -buildconf
           echo "=== $FFMPEG -decoders ==="
-          "$FFMPEG" -decoders
+          "$FFMPEG" -hide_banner -decoders
           echo "=== $FFMPEG -encoders ==="
-          "$FFMPEG" -encoders
+          "$FFMPEG" -hide_banner -encoders
           echo "=== $FFMPEG -demuxers ==="
-          "$FFMPEG" -demuxers
+          "$FFMPEG" -hide_banner -demuxers
           echo "=== $FFMPEG -muxers ==="
-          "$FFMPEG" -muxers
+          "$FFMPEG" -hide_banner -muxers
           echo "=== $FFMPEG -filters ==="
-          "$FFMPEG" -filters
+          "$FFMPEG" -hide_banner -filters
           echo "=== $FFMPEG -protocols ==="
-          "$FFMPEG" -protocols
+          "$FFMPEG" -hide_banner -protocols
           echo "=== $FFMPEG -hwaccels ==="
-          "$FFMPEG" -hwaccels
+          "$FFMPEG" -hide_banner -hwaccels
       - name: Replace spaces in string
         id: strs
         run: |
           SLUG="${{ matrix.target }}-${{ matrix.variant }}"
-          echo "artifact_slug=${SLUG// /-}" >> $GITHUB_OUTPUT
+          echo "artifact_slug=${SLUG// /-}" >> "$GITHUB_OUTPUT"
       - name: Upload artifacts
         uses: actions/upload-artifact@v7
         with:
@@ -421,25 +389,26 @@ jobs:
           overwrite: true
           path: artifacts/*
           compression-level: 1
+
   publish_release:
     name: Publish release
-    if: ${{ !cancelled() && ( github.event_name == 'schedule' || github.event.inputs.doRelease == 'true' ) && needs.build_ffmpeg.result == 'success' }}
+    if: ${{ !cancelled() && (github.event_name == 'schedule' || github.event.inputs.doRelease == 'true') && needs.build_ffmpeg.result == 'success' }}
     needs: build_ffmpeg
     runs-on: ubuntu-latest
     steps:
       - name: Install dependencies
         run: sudo apt-get update && sudo apt-get install -y libarchive-tools p7zip-full
-      - name: Checkout
+      - name: Checkout upstream source
         uses: actions/checkout@v7
         with:
-          repository: "BtbN/FFmpeg-Builds"
+          repository: BtbN/FFmpeg-Builds
           fetch-depth: 0
       - name: Free Disk-Space
         run: ./util/free_disk_space.sh
       - name: Checkout Self
         uses: actions/checkout@v7
         with:
-          path: "self"
+          path: self
           fetch-depth: 0
       - name: Download artifacts
         uses: actions/download-artifact@v8
@@ -458,8 +427,8 @@ jobs:
           (cd artifacts && sha256sum *.{zip,tar.xz} > checksums.sha256)
           ./util/release_body.sh "$TAGNAME" artifacts/*.{zip,tar.xz} > release_body.md
           gh release create "$TAGNAME" --repo rokibhasansagar/FFmpeg-Builds --target "master" --title "$NAME" --notes-file release_body.md artifacts/*.{zip,tar.xz} artifacts/checksums.*
-          echo "tag_name=${TAGNAME}" >> $GITHUB_OUTPUT
-          echo "rel_date=${RELDATE}" >> $GITHUB_OUTPUT
+          echo "tag_name=${TAGNAME}" >> "$GITHUB_OUTPUT"
+          echo "rel_date=${RELDATE}" >> "$GITHUB_OUTPUT"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Update Latest
@@ -481,9 +450,10 @@ jobs:
       - name: Prune old releases
         continue-on-error: true
         run: ../util/prunetags.sh
-        working-directory: "self"
+        working-directory: self
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   clean_logs:
     name: Workflow Cleaner
     needs: publish_release

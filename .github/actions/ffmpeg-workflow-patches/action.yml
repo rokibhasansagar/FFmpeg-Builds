@@ -1,0 +1,110 @@
+name: FFmpeg Workflow Patches
+description: Apply selected dependency-pruning and FFmpeg LTO workflow patches
+
+inputs:
+  apply-dependencies:
+    description: Remove selected dependencies from scripts.d/zz-final.sh
+    required: false
+    default: 'false'
+  patch-build-sh:
+    description: Patch build.sh to reuse non-LTO dependency images for LTO FFmpeg builds
+    required: false
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Apply minimal dependency set
+      if: ${{ inputs.apply-dependencies == 'true' }}
+      shell: bash
+      env:
+        REMOVE_DEPS: avisynth chromaprint davs2 dvd frei0r gme kvazaar libbluray librist libssh libzmq lilv openal openapv openmpt pulseaudio rav1e sdl snappy uavs3d whisper xavs2 xvid librsvg
+      run: |
+        set -euo pipefail
+        test -f scripts.d/zz-final.sh
+        awk -v drop="$REMOVE_DEPS" '
+          BEGIN {
+            n = split(drop, a, /[[:space:]]+/)
+            for (i = 1; i <= n; i++) rm[a[i]] = 1
+          }
+          /^    echo / {
+            dep = $0
+            sub(/^    echo /, "", dep)
+            if (dep in rm) next
+          }
+          { print }
+        ' scripts.d/zz-final.sh > scripts.d/zz-final.sh.tmp
+        mv scripts.d/zz-final.sh.tmp scripts.d/zz-final.sh
+        echo "=== Final dependency manifest ==="
+        sed -n '/^ffbuild_depends() {/,/^}/p' scripts.d/zz-final.sh
+
+    - name: Patch build.sh for shared LTO dependency images
+      if: ${{ inputs.patch-build-sh == 'true' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        test -f build.sh
+
+        replace_once() {
+          local file="$1" needle="$2" replacement="$3"
+          local content before rest
+          content=$(<"$file")
+
+          [[ "$content" == *"$needle"* ]] || {
+            echo "::error::Patch target not found in $file"
+            return 1
+          }
+
+          before=${content%%"$needle"*}
+          rest=${content#*"$needle"}
+
+          [[ "$rest" != *"$needle"* ]] || {
+            echo "::error::Patch target occurs more than once in $file"
+            return 1
+          }
+
+          printf '%s%s%s' "$before" "$replacement" "$rest" > "$file"
+        }
+
+        needle='for addin in ${ADDINS[*]}; do
+            source "addins/${addin}.sh"
+        done'
+
+        replacement='for addin in ${ADDINS[*]}; do
+            source "addins/${addin}.sh"
+        done
+
+        LTO_BUILD=0
+        if [[ " ${ADDINS[*]} " == *" lto "* ]]; then
+            LTO_BUILD=1
+            IMAGE="${IMAGE%-lto:latest}:latest"
+        fi
+
+        LTO_ARGS=()
+        if [[ "$LTO_BUILD" == 1 ]]; then
+            LTO_ARGS=(-e FFBUILD_LTO=1)
+        fi'
+
+        replace_once build.sh "$needle" "$replacement"
+
+        needle='    ./configure --prefix=/ffbuild/prefix'
+        replacement='    if [[ "${FFBUILD_LTO:-}" == "1" ]]; then
+            FF_CONFIGURE="$FF_CONFIGURE --enable-lto"
+            FF_CFLAGS="$FF_CFLAGS -flto=auto"
+            FF_CXXFLAGS="$FF_CXXFLAGS -flto=auto"
+            FF_LDFLAGS="$FF_LDFLAGS -flto=auto"
+            FFBUILD_TARGET_FLAGS="$FFBUILD_TARGET_FLAGS --ar=${FFBUILD_TOOLCHAIN}-gcc-ar --nm=${FFBUILD_TOOLCHAIN}-gcc-nm --ranlib=${FFBUILD_TOOLCHAIN}-gcc-ranlib"
+        fi
+
+        ./configure --prefix=/ffbuild/prefix'
+        # build.sh uses an unquoted heredoc. Escape these variables so they
+        # expand inside the build container, not on the host.
+        replacement="${replacement//\$/\\$}"
+        replace_once build.sh "$needle" "$replacement"
+
+        needle='docker run --rm -i $TTY_ARG "${UIDARGS[@]}" -v "$PWD/ffbuild":/ffbuild -v "$BUILD_SCRIPT":/build.sh "$IMAGE" bash /build.sh'
+        replacement='docker run --rm -i $TTY_ARG "${UIDARGS[@]}" "${LTO_ARGS[@]}" -v "$PWD/ffbuild":/ffbuild -v "$BUILD_SCRIPT":/build.sh "$IMAGE" bash /build.sh'
+        replace_once build.sh "$needle" "$replacement"
+
+        echo "Patched build.sh successfully"
+
