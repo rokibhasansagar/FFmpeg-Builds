@@ -39,7 +39,7 @@ jobs:
       - id: matrix
         run: |
           COMBINATIONS=(
-            {win64,linux64}:nonfree{,-shared}{," 5.1"," 6.1"," 7.1"," 8.1"}
+            {win64,linux64}:nonfree{,-shared}{," 5.1"," 6.1"," 7.1"," 8.1"}{," lto"}
           )
           MATRIX_JSON=$(printf "%s\n" "${COMBINATIONS[@]}" | jq -R -s -c '
             split("\n")
@@ -47,7 +47,7 @@ jobs:
             | map(split(":") | {
                 target: .[0], 
                 variant: .[1],
-                allow_failure: (.[1] | contains("5.1"))
+                allow_failure: (.[1] | (contains("5.1") or contains("lto")))
               })
             | {include: .}
           ')
