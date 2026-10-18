@@ -1,110 +1,175 @@
-name: FFmpeg Workflow Patches
-description: Apply selected dependency-pruning and FFmpeg LTO workflow patches
+name: FFmpeg workflow patches
+description: Prune unwanted dependencies and install FFmpeg build add-ons
 
 inputs:
   apply-dependencies:
-    description: Remove selected dependencies from scripts.d/zz-final.sh
+    description: Remove unwanted dependency build scripts before generating target images
     required: false
-    default: 'false'
-  patch-build-sh:
-    description: Patch build.sh to reuse non-LTO dependency images for LTO FFmpeg builds
+    default: "true"
+  hwaccel:
+    description: Keep hardware-acceleration dependencies
     required: false
-    default: 'false'
+    default: "true"
 
 runs:
   using: composite
   steps:
-    - name: Apply minimal dependency set
+    - name: Prune dependency scripts
       if: ${{ inputs.apply-dependencies == 'true' }}
       shell: bash
+      working-directory: upstream
       env:
-        REMOVE_DEPS: avisynth chromaprint davs2 dvd frei0r gme kvazaar libbluray librist libssh libzmq lilv openal openapv openmpt pulseaudio rav1e sdl snappy uavs3d whisper xavs2 xvid librsvg
+        HWACCEL: ${{ inputs.hwaccel }}
       run: |
         set -euo pipefail
-        test -f scripts.d/zz-final.sh
-        awk -v drop="$REMOVE_DEPS" '
-          BEGIN {
-            n = split(drop, a, /[[:space:]]+/)
-            for (i = 1; i <= n; i++) rm[a[i]] = 1
-          }
-          /^    echo / {
-            dep = $0
-            sub(/^    echo /, "", dep)
-            if (dep in rm) next
-          }
-          { print }
-        ' scripts.d/zz-final.sh > scripts.d/zz-final.sh.tmp
-        mv scripts.d/zz-final.sh.tmp scripts.d/zz-final.sh
+
+        REMOVE_DEPS=(
+          avisynth
+          chromaprint
+          davs2
+          dvd
+          frei0r
+          gme
+          kvazaar
+          libbluray
+          librist
+          libssh
+          libzmq
+          lilv
+          openal
+          openapv
+          openmpt
+          pulseaudio
+          rav1e
+          rustdedup
+          sdl
+          snappy
+          uavs3d
+          whisper
+          xavs2
+          xvid
+          librsvg
+        )
+
+        # VAAPI's build depends on the X11 stack, so retain it in hwaccel builds.
+        if [[ "$HWACCEL" != "true" ]]; then
+          REMOVE_DEPS+=(
+            opencl
+            vulkan
+            libplacebo
+            amf
+            libglvnd
+            ffnvcodec
+            onevpl
+            vaapi
+            x11
+            libxcb
+            libx11
+            libxext
+            libxfixes
+            libxrender
+            libxv
+            libxrandr
+            libxss
+            libxshmfence
+            libxau
+            libxdmcp
+            libxcursor
+            libxi
+            libxinerama
+            xorg-macros
+            pixman
+          )
+        fi
+
+        printf 'Pruning dependency scripts:\n'
+        printf '  %s\n' "${REMOVE_DEPS[@]}"
+
+        for dep in "${REMOVE_DEPS[@]}"; do
+          while IFS= read -r -d '' path; do
+            printf 'Removing %s\n' "$path"
+            rm -rf -- "$path"
+          done < <(
+            find scripts.d \
+              -mindepth 1 \
+              -maxdepth 3 \
+              -iname "*${dep}*" \
+              -print0
+          )
+        done
+
+        # Remove dependency declarations from every remaining script, not only
+        # zz-final.sh. For example, 15-base.sh directly declares xorg-macros,
+        # so pruning its build script alone would leave a dangling dependency.
+        while IFS= read -r -d '' script; do
+          tmp="$(mktemp)"
+          awk -v deps="${REMOVE_DEPS[*]}" '
+            BEGIN {
+              count = split(deps, dep, " ")
+              for (i = 1; i <= count; i++) drop[dep[i]] = 1
+            }
+            $1 == "echo" && NF == 2 {
+              name = $2
+              gsub(/["\047]/, "", name)
+              if (name in drop) next
+            }
+            { print }
+          ' "$script" > "$tmp"
+          cat "$tmp" > "$script"
+          rm -f "$tmp"
+        done < <(find scripts.d -type f -name '*.sh' -print0)
+
+        echo "=== Remaining base dependency declarations ==="
+        sed -n '/^ffbuild_depends() {/,/^}/p' scripts.d/15-base.sh 2>/dev/null || true
         echo "=== Final dependency manifest ==="
         sed -n '/^ffbuild_depends() {/,/^}/p' scripts.d/zz-final.sh
 
-    - name: Patch build.sh for shared LTO dependency images
-      if: ${{ inputs.patch-build-sh == 'true' }}
+    - name: Create litelto add-on
       shell: bash
+      working-directory: upstream
       run: |
         set -euo pipefail
-        test -f build.sh
+        mkdir -p addins
 
-        replace_once() {
-          local file="$1" needle="$2" replacement="$3"
-          local content before rest
-          content=$(<"$file")
+        cat > addins/litelto.sh <<'ADDIN'
+        #!/bin/bash
 
-          [[ "$content" == *"$needle"* ]] || {
-            echo "::error::Patch target not found in $file"
-            return 1
-          }
+        # Use the corresponding standard target image instead of a separately
+        # staged LTO image. The FFmpeg build uses LTO; dependencies do not.
+        IMAGE="${IMAGE/-litelto/}"
 
-          before=${content%%"$needle"*}
-          rest=${content#*"$needle"}
+        FF_CONFIGURE="$FF_CONFIGURE --enable-lto --extra-cflags=-flto=auto --extra-cxxflags=-flto=auto --extra-ldflags=-flto=auto"
+        ADDIN
 
-          [[ "$rest" != *"$needle"* ]] || {
-            echo "::error::Patch target occurs more than once in $file"
-            return 1
-          }
+    - name: Create hwaccel add-on
+      shell: bash
+      working-directory: upstream
+      run: |
+        set -euo pipefail
+        mkdir -p addins
 
-          printf '%s%s%s' "$before" "$replacement" "$rest" > "$file"
+        cat > addins/hwaccel.sh <<'ADDIN'
+        #!/bin/bash
+
+        HWACCEL_CONFIGURE=""
+        case "$TARGET" in
+            win*)
+                HWACCEL_CONFIGURE="--enable-amf --enable-ffnvcodec --enable-opencl --enable-vulkan"
+                ;;
+            linux*)
+                HWACCEL_CONFIGURE="--enable-ffnvcodec --enable-vaapi --enable-opencl --enable-vulkan"
+                ;;
+        esac
+
+        # oneVPL is available in this workflow for FFmpeg 6.0+ on non-ARM targets.
+        if [[ "$TARGET" != *arm64 ]] && (( $(ffbuild_ffver) >= 600 )); then
+            HWACCEL_CONFIGURE="$HWACCEL_CONFIGURE --enable-libvpl"
+        fi
+
+        FF_CONFIGURE="$FF_CONFIGURE $HWACCEL_CONFIGURE"
+
+        ffbuild_dockeraddin() {
+            to_df "ENV FF_CONFIGURE=\"\$FF_CONFIGURE $HWACCEL_CONFIGURE\""
         }
-
-        needle='for addin in ${ADDINS[*]}; do
-            source "addins/${addin}.sh"
-        done'
-
-        replacement='for addin in ${ADDINS[*]}; do
-            source "addins/${addin}.sh"
-        done
-
-        LTO_BUILD=0
-        if [[ " ${ADDINS[*]} " == *" lto "* ]]; then
-            LTO_BUILD=1
-            IMAGE="${IMAGE%-lto:latest}:latest"
-        fi
-
-        LTO_ARGS=()
-        if [[ "$LTO_BUILD" == 1 ]]; then
-            LTO_ARGS=(-e FFBUILD_LTO=1)
-        fi'
-
-        replace_once build.sh "$needle" "$replacement"
-
-        needle='    ./configure --prefix=/ffbuild/prefix'
-        replacement='    if [[ "${FFBUILD_LTO:-}" == "1" ]]; then
-            FF_CONFIGURE="$FF_CONFIGURE --enable-lto"
-            FF_CFLAGS="$FF_CFLAGS -flto=auto"
-            FF_CXXFLAGS="$FF_CXXFLAGS -flto=auto"
-            FF_LDFLAGS="$FF_LDFLAGS -flto=auto"
-            FFBUILD_TARGET_FLAGS="$FFBUILD_TARGET_FLAGS --ar=${FFBUILD_TOOLCHAIN}-gcc-ar --nm=${FFBUILD_TOOLCHAIN}-gcc-nm --ranlib=${FFBUILD_TOOLCHAIN}-gcc-ranlib"
-        fi
-
-        ./configure --prefix=/ffbuild/prefix'
-        # build.sh uses an unquoted heredoc. Escape these variables so they
-        # expand inside the build container, not on the host.
-        replacement="${replacement//\$/\\$}"
-        replace_once build.sh "$needle" "$replacement"
-
-        needle='docker run --rm -i $TTY_ARG "${UIDARGS[@]}" -v "$PWD/ffbuild":/ffbuild -v "$BUILD_SCRIPT":/build.sh "$IMAGE" bash /build.sh'
-        replacement='docker run --rm -i $TTY_ARG "${UIDARGS[@]}" "${LTO_ARGS[@]}" -v "$PWD/ffbuild":/ffbuild -v "$BUILD_SCRIPT":/build.sh "$IMAGE" bash /build.sh'
-        replace_once build.sh "$needle" "$replacement"
-
-        echo "Patched build.sh successfully"
+        ADDIN
 
