@@ -19,9 +19,9 @@ on:
         default: false
         required: false
   schedule:
-    - cron: "30 1 1,11,21 * *"
-    - cron: "30 9 1,11,21 * *"
-    - cron: "30 1 2,12,22 * *"
+    - cron: '30 5 1,11,21 * *'
+    - cron: '30 12 1,11,21 * *'
+    - cron: '30 6 2,12,22 * *'
 
 permissions:
   contents: write
@@ -54,7 +54,7 @@ jobs:
 
           # Cron #2 also stages linuxarm64 7.1 variants and their add-ons.
           if [[ "$EVENT_NAME" == "schedule" &&
-                "$EVENT_SCHEDULE" == "30 9 1,11,21 * *" ]]; then
+                "$EVENT_SCHEDULE" == '30 12 1,11,21 * *' ]]; then
             COMBINATIONS+=(
               linuxarm64:nonfree{,-shared}" 7.1"{," litelto"," hwaccel"," litelto hwaccel"}
             )
@@ -77,7 +77,7 @@ jobs:
           if [[ "$EVENT_NAME" == "schedule" ]]; then
             case "$EVENT_SCHEDULE" in
               # Cron #1: stage all standard variants except 5.1.
-              "30 1 1,11,21 * *")
+              '30 5 1,11,21 * *')
                 matrix="$(jq -c '
                   .include |= map(select(
                     (.variant | test("(^| )5\\.1( |$)") | not)
@@ -86,7 +86,7 @@ jobs:
                 ;;
 
               # Cron #2: standard targets get 5.1; linuxarm64 gets 7.1.
-              "30 9 1,11,21 * *")
+              '30 12 1,11,21 * *')
                 matrix="$(jq -c '
                   .include |= map(select(
                     (
@@ -138,8 +138,8 @@ jobs:
         ) || (
           github.event_name == 'schedule' &&
           (
-            github.event.schedule == '30 1 1,11,21 * *' ||
-            github.event.schedule == '30 9 1,11,21 * *'
+            github.event.schedule == '30 5 1,11,21 * *' ||
+            github.event.schedule == '30 12 1,11,21 * *'
           )
         )
       }}
@@ -232,8 +232,8 @@ jobs:
         ) || (
           github.event_name == 'schedule' &&
           (
-            github.event.schedule == '30 1 1,11,21 * *' ||
-            github.event.schedule == '30 9 1,11,21 * *'
+            github.event.schedule == '30 5 1,11,21 * *' ||
+            github.event.schedule == '30 12 1,11,21 * *'
           )
         )
       }}
@@ -315,8 +315,8 @@ jobs:
         ) || (
           github.event_name == 'schedule' &&
           (
-            github.event.schedule == '30 1 1,11,21 * *' ||
-            github.event.schedule == '30 9 1,11,21 * *'
+            github.event.schedule == '30 5 1,11,21 * *' ||
+            github.event.schedule == '30 12 1,11,21 * *'
           )
         )
       }}
@@ -445,7 +445,7 @@ jobs:
             )
           ) || (
             github.event_name == 'schedule' &&
-            github.event.schedule == '30 1 2,12,22 * *'
+            github.event.schedule == '30 6 2,12,22 * *'
           )
         )
       }}
@@ -537,7 +537,7 @@ jobs:
             inputs.quickRelease == true
           ) || (
             github.event_name == 'schedule' &&
-            github.event.schedule == '30 1 2,12,22 * *'
+            github.event.schedule == '30 6 2,12,22 * *'
           )
         )
       }}
